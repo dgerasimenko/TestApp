@@ -1,0 +1,1 @@
+psql -d aenaflight -U postgres -f migration.sql
