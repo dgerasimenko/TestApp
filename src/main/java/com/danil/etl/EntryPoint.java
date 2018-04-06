@@ -17,10 +17,15 @@ public class EntryPoint implements CommandLineRunner {
     private ETL etl;
 
     public static void main(String[] args) throws Exception {
-        SpringApplication app = new SpringApplication(EntryPoint.class);
-        app.setBannerMode(Banner.Mode.OFF);
-        app.setLogStartupInfo(false);
-        app.run(args);
+        try {
+            SpringApplication app = new SpringApplication(EntryPoint.class);
+            app.setBannerMode(Banner.Mode.OFF);
+            app.setLogStartupInfo(false);
+            app.run(args);
+        } catch (Exception ex) {
+            System.out.println("Application failed: " + ex.getCause());
+            throw ex;
+        }
     }
 
     @Override
