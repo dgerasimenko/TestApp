@@ -9,24 +9,4 @@ import java.util.List;
 @Repository
 @Transactional
 public class AenaflightSourceDao extends AbstractObjectDao<AenaflightSource> {
-
-    @Override
-    public AenaflightSource getObject(Long id) {
-        return findById(AenaflightSource.class, id);
-    }
-
-    @Override
-    public List<AenaflightSource> getAllObjects() {
-        return loadObjects(AenaflightSource.class);
-    }
-
-    @Override
-    public List<AenaflightSource> getObjectsPage(int offset, int limit) {
-        return loadObjectsPage(AenaflightSource.class, offset, limit);
-    }
-
-    @Override
-    public void delete(Long id) {
-        delete(AenaflightSource.class, id);
-    }
 }

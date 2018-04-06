@@ -1,14 +1,12 @@
 package com.danil.etl.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "aenaflight_2017_01")
 public class Aenaflight {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private Long id;
     @Column(name="act_arr_date_time_lt")

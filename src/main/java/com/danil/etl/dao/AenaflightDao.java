@@ -1,32 +1,24 @@
 package com.danil.etl.dao;
 
 import com.danil.etl.entity.Aenaflight;
+
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Query;
 import java.util.List;
 
 @Repository
 @Transactional
-public class AenaflightDao  extends AbstractObjectDao<Aenaflight> {
+public class AenaflightDao extends AbstractObjectDao<Aenaflight> {
 
-    @Override
-    public Aenaflight getObject(Long id) {
-        return findById(Aenaflight.class, id);
-    }
-
-    @Override
-    public List<Aenaflight> getAllObjects() {
-        return loadObjects(Aenaflight.class);
-    }
-
-    @Override
-    public List<Aenaflight> getObjectsPage(int offset, int limit) {
-        return loadObjectsPage(Aenaflight.class, offset, limit);
-    }
-
-    @Override
-    public void delete(Long id) {
-        delete(Aenaflight.class, id);
+    @Transactional
+    public List<Aenaflight> getNextChunk(Long prevRecordId, int limit) {
+        final Query hql = entityManager
+                .createQuery( "FROM Aenaflight WHERE id > :prevRecordId")
+                .setParameter("prevRecordId", prevRecordId);
+        hql.setMaxResults(limit);
+        List<Aenaflight> list = hql.getResultList();
+        return list;
     }
 }
