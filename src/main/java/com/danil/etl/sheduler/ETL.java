@@ -13,7 +13,9 @@ import com.danil.etl.task.converter.FlightToDestinationData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
+import java.io.*;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -38,10 +40,22 @@ public class ETL {
     private int chunkSize;
 
     public void doJob() {
+        System.out.println("Starting...");
+        final long startTime = System.currentTimeMillis();
         int exitCode = extractAndTransform();
         if (exitCode == 0) {
             load(rollUpTmpReords());
+            System.out.println(".Done.");
+        } else {
+            System.out.println("WARN. Transformation interrupted! Please start jar to resume transformation.");
         }
+        final long endTime = System.currentTimeMillis();
+        final long totalTimeInMilis = endTime - startTime;
+        System.out.println(
+                String.format("Total spent time: %02d min %02d sec",
+                        TimeUnit.MILLISECONDS.toMinutes(totalTimeInMilis),
+                        TimeUnit.MILLISECONDS.toSeconds(totalTimeInMilis) -
+                                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeInMilis))));
     }
 
     /**
@@ -53,9 +67,20 @@ public class ETL {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(taskQueueSize);
         final ExecutorService executor = new ThreadPoolExecutor(1, poolSize, 0L, TimeUnit.MILLISECONDS, queue);
 
+        final List<AenaflightTmp> currentProcessingState = aenaflightTmpDao.getOrderedByStart();
+        final Long prevRecordId;
+        if (CollectionUtils.isEmpty(currentProcessingState)) {
+            prevRecordId = 0l;
+        } else {
+            System.out.println("WARN. Transformation resumed.");
+            prevRecordId = currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
+        }
+
         try {
-            List<Aenaflight> chunk = aenaflightDao.getNextChunk(0l, chunkSize);
+            List<Aenaflight> chunk = aenaflightDao.getNextChunk(prevRecordId, chunkSize);
             int tmpChunkSize = chunk.size();
+            String progressAnimation = "|/-\\";
+            int animationCounter = 0;
             while (tmpChunkSize > 0) {
                 Long startIndex = chunk.get(tmpChunkSize - 1).getId();
                 executor.submit(new ScrapperTask(aenaflightTmpDao, chunk));
@@ -63,7 +88,13 @@ public class ETL {
                 tmpChunkSize = chunk.size();
 
                 while (queue.size() == taskQueueSize) {
-                    Thread.sleep(200);
+                    Thread.sleep(ESTIMATED_TIME_TO_COMPLETE_ONE_TASK_MILIS);
+                }
+                if (tmpChunkSize > 0) {
+                    System.out.print("\rTransformation..." + progressAnimation.charAt(animationCounter % progressAnimation.length()));
+                    animationCounter++;
+                } else {
+                    System.out.print("\rTransformation....");
                 }
             }
         } catch (InterruptedException ex) {
@@ -79,7 +110,7 @@ public class ETL {
             executor.shutdownNow();
         }
         if (!done) {
-            System.out.println("Application stopped by timeout. Exit.");
+            System.out.println("Application stopped by timeout. Some tasks stay inProgress. Exit.");
             return -1;
         }
         return 0;
@@ -97,12 +128,23 @@ public class ETL {
         final AenaflightTmp finalTmpFlight = collector.collect(tmpFlights);
         final FlightTmpToFlight flightTmpToFlight = new FlightTmpToFlight();
         final Aenaflight finalFlight = flightTmpToFlight.convert(finalTmpFlight);
-
+dumpFinalrecord(finalFlight);
         aenaflightDao.deleteAll();
         aenaflightDao.save(finalFlight);
         aenaflightTmpDao.deleteAll();
-
         return finalFlight;
+    }
+
+    private void dumpFinalrecord(Aenaflight finalFlight) {
+
+        try {
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("d:/dumpFinalRecord.txt", true)));
+            out.println(finalFlight.toString());
+            out.close();
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
+
     }
 
     /**
@@ -116,5 +158,4 @@ public class ETL {
 
         destinationDataDao.save(destinationData);
     }
-
 }
