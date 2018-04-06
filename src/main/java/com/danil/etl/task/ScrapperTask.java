@@ -2,6 +2,8 @@ package com.danil.etl.task;
 
 import com.danil.etl.dao.AenaflightTmpDao;
 import com.danil.etl.entity.Aenaflight;
+import com.danil.etl.task.collector.FlightCollector;
+
 import java.util.List;
 
 public class ScrapperTask implements Runnable {

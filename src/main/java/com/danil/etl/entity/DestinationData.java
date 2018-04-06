@@ -1,15 +1,13 @@
 package com.danil.etl.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "aenaflight_source")
-public class AenaflightSource {
+@Table(name = "destination_data")
+public class DestinationData {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private Long id;
     @Column

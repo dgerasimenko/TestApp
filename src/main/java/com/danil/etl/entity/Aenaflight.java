@@ -1,6 +1,7 @@
 package com.danil.etl.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "aenaflight_2017_01")

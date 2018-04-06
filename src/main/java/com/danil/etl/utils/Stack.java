@@ -26,6 +26,13 @@ public class Stack<T> implements Iterable<T> {
             }
         }
     }
+
+    public void pushAll(T... values) {
+        for (T t : values) {
+            push(t);
+        }
+    }
+
     public int size() {
         return stack.size();
     }

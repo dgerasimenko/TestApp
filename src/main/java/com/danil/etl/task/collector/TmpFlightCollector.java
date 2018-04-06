@@ -1,17 +1,19 @@
-package com.danil.etl.task;
+package com.danil.etl.task.collector;
 
-import com.danil.etl.entity.Aenaflight;
 import com.danil.etl.entity.AenaflightTmp;
 import com.danil.etl.utils.Stack;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 
-public class FlightCollector {
+public class TmpFlightCollector {
 
-    public AenaflightTmp collect(List<Aenaflight> flights) {
+    private static final char SEPARATOR = ',';
+
+    public AenaflightTmp collect(List<AenaflightTmp> flights) {
         final AenaflightTmp tmpFlight = new AenaflightTmp();
-        tmpFlight.setStartIndex(flights.get(0).getId());
-        tmpFlight.setEndIndex(flights.get(flights.size() - 1).getId());
+        tmpFlight.setStartIndex(flights.get(0).getStartIndex());
+        tmpFlight.setEndIndex(flights.get(flights.size() - 1).getEndIndex());
 
         final Stack<String> baggageInfoStack = new Stack<>();
         final Stack<String> counterStack = new Stack<>();
@@ -20,96 +22,100 @@ public class FlightCollector {
         final Stack<String> terminalInfoStack = new Stack<>();
         final Stack<String> arrTerminalInfoStack = new Stack<>();
 
-        for(Aenaflight flight : flights) {
+        for(AenaflightTmp flight : flights) {
 
-            if (flight.getActArrDateTimeLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getActArrDateTimeLt())) {
                 tmpFlight.setActArrDateTimeLt(flight.getActArrDateTimeLt());
             }
-            if (flight.getArrAptCodeIata() != null) {
+            if (StringUtils.isNotEmpty(flight.getArrAptCodeIata())) {
                 tmpFlight.setArrAptCodeIata(flight.getArrAptCodeIata());
             }
-            if (flight.getAircraftNameScheduled() != null) {
+            if (StringUtils.isNotEmpty(flight.getAircraftNameScheduled())) {
                 tmpFlight.setAircraftNameScheduled(flight.getAircraftNameScheduled());
             }
-            if (flight.getArrAptNameEs() != null) {
+            if (StringUtils.isNotEmpty(flight.getArrAptNameEs())) {
                 tmpFlight.setArrAptNameEs(flight.getArrAptNameEs());
             }
 
-            baggageInfoStack.push(tmpFlight.getBaggageInfo());
+            baggageInfoStack.pushAll(StringUtils.split(flight.getBaggageInfo(), SEPARATOR));
 
-            if (flight.getCarrierAirlineNameEn() != null) {
+            if (StringUtils.isNotEmpty(flight.getCarrierAirlineNameEn())) {
                 tmpFlight.setCarrierAirlineNameEn(flight.getCarrierAirlineNameEn());
             }
-            if (flight.getCarrierIcaoCode() != null) {
+            if (StringUtils.isNotEmpty(flight.getCarrierIcaoCode())) {
                 tmpFlight.setCarrierIcaoCode(flight.getCarrierIcaoCode());
             }
-            if (flight.getCarrierNumber() != null) {
+            if (StringUtils.isNotEmpty(flight.getCarrierNumber())) {
                 tmpFlight.setCarrierNumber(flight.getCarrierNumber());
             }
 
-            counterStack.push(tmpFlight.getCarrierNumber());
+            counterStack.pushAll(StringUtils.split(flight.getCarrierNumber(), SEPARATOR));
 
-            if (flight.getDepAptNameEs() != null) {
+            if (StringUtils.isNotEmpty(flight.getDepAptNameEs())) {
                 tmpFlight.setDepAptNameEs(flight.getDepAptNameEs());
             }
-            if (flight.getDepAptNameEs() != null) {
+            if (StringUtils.isNotEmpty(flight.getDepAptNameEs())) {
                 tmpFlight.setDepAptNameEs(flight.getDepAptNameEs());
             }
-            if (flight.getDepAptCodeIata() != null) {
+            if (StringUtils.isNotEmpty(flight.getDepAptCodeIata())) {
                 tmpFlight.setDepAptCodeIata(flight.getDepAptCodeIata());
             }
-            if (flight.getEstArrDateTimeLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getEstArrDateTimeLt())) {
                 tmpFlight.setEstArrDateTimeLt(flight.getEstArrDateTimeLt());
             }
-            if (flight.getEstDepDateTimeLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getEstDepDateTimeLt())) {
                 tmpFlight.setEstDepDateTimeLt(flight.getEstDepDateTimeLt());
             }
-            if (flight.getFlightAirlineNameEn() != null) {
+            if (StringUtils.isNotEmpty(flight.getFlightAirlineNameEn())) {
                 tmpFlight.setFlightAirlineNameEn(flight.getFlightAirlineNameEn());
             }
-            if (flight.getFlightAirlineName() != null) {
+            if (StringUtils.isNotEmpty(flight.getFlightAirlineName())) {
                 tmpFlight.setFlightAirlineName(flight.getFlightAirlineName());
             }
-            if (flight.getFlightIcaoCode() != null) {
+            if (StringUtils.isNotEmpty(flight.getFlightIcaoCode())) {
                 tmpFlight.setFlightIcaoCode(flight.getFlightIcaoCode());
             }
-            if (flight.getFlightNumber() != null) {
+            if (StringUtils.isNotEmpty(flight.getFlightNumber())) {
                 tmpFlight.setFlightNumber(flight.getFlightNumber());
             }
-            if (flight.getFltLegSeqNo() != null) {
+            if (StringUtils.isNotEmpty(flight.getFltLegSeqNo())) {
                 tmpFlight.setFltLegSeqNo(flight.getFltLegSeqNo());
             }
 
-            gateInfoStack.push(flight.getGateInfo());
+            gateInfoStack.pushAll(StringUtils.split(flight.getGateInfo(), SEPARATOR));
 
-            loungeInfoStack.push(flight.getLoungeInfo());
+            loungeInfoStack.pushAll(StringUtils.split(flight.getLoungeInfo(), SEPARATOR));
 
-            if (flight.getSchdArrOnlyDateLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getSchdArrOnlyDateLt())) {
                 tmpFlight.setSchdArrOnlyDateLt(flight.getSchdArrOnlyDateLt());
             }
-            if (flight.getSchdArrOnlyTimeLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getSchdArrOnlyTimeLt())) {
                 tmpFlight.setSchdArrOnlyTimeLt(flight.getSchdArrOnlyTimeLt());
             }
-            if (flight.getSourceData() != null) {
+            if (StringUtils.isNotEmpty(flight.getSourceData())) {
                 tmpFlight.setSourceData(flight.getSourceData());
             }
-            if (flight.getStatusInfo() != null) {
+            if (StringUtils.isNotEmpty(flight.getStatusInfo())) {
                 tmpFlight.setStatusInfo(flight.getStatusInfo());
             }
 
-            terminalInfoStack.push(flight.getTerminalInfo());
+            terminalInfoStack.pushAll(StringUtils.split(flight.getTerminalInfo(), SEPARATOR));
 
-            arrTerminalInfoStack.push(flight.getArrTerminalInfo());
+            arrTerminalInfoStack.pushAll(StringUtils.split(flight.getArrTerminalInfo(), SEPARATOR));
 
-            if (flight.getActDepDateTimeLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getActDepDateTimeLt())) {
                 tmpFlight.setActDepDateTimeLt(flight.getActDepDateTimeLt());
             }
-            if (flight.getSchdDepOnlyDateLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getSchdDepOnlyDateLt())) {
                 tmpFlight.setSchdDepOnlyDateLt(flight.getSchdDepOnlyDateLt());
             }
-            if (flight.getSchdDepOnlyTimeLt() != null) {
+            if (StringUtils.isNotEmpty(flight.getSchdDepOnlyTimeLt())) {
                 tmpFlight.setSchdDepOnlyTimeLt(flight.getSchdDepOnlyTimeLt());
             }
+            if (flight.getCreatedAt() != null) {
+                tmpFlight.setCreatedAt(flight.getCreatedAt());
+            }
+
         }
 
         tmpFlight.setBaggageInfo(baggageInfoStack.toString());

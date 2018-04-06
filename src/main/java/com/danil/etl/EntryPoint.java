@@ -1,6 +1,6 @@
 package com.danil.etl;
 
-import com.danil.etl.sheduler.TaskSheduler;
+import com.danil.etl.sheduler.ETL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
@@ -14,10 +14,7 @@ import org.springframework.core.env.Environment;
 public class EntryPoint implements CommandLineRunner {
 
     @Autowired
-    private TaskSheduler taskSheduler;
-
-    @Autowired
-    private Environment environment;
+    private ETL etl;
 
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(EntryPoint.class);
@@ -28,7 +25,7 @@ public class EntryPoint implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        taskSheduler.start();
+        etl.doJob();
     }
 }
 
