@@ -128,23 +128,11 @@ public class ETL {
         final AenaflightTmp finalTmpFlight = collector.collect(tmpFlights);
         final FlightTmpToFlight flightTmpToFlight = new FlightTmpToFlight();
         final Aenaflight finalFlight = flightTmpToFlight.convert(finalTmpFlight);
-dumpFinalrecord(finalFlight);
+
         aenaflightDao.deleteAll();
         aenaflightDao.save(finalFlight);
         aenaflightTmpDao.deleteAll();
         return finalFlight;
-    }
-
-    private void dumpFinalrecord(Aenaflight finalFlight) {
-
-        try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("d:/dumpFinalRecord.txt", true)));
-            out.println(finalFlight.toString());
-            out.close();
-        } catch (IOException e) {
-            //exception handling left as an exercise for the reader
-        }
-
     }
 
     /**

@@ -69,6 +69,7 @@
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>db_config.properties</include>
+										<include>readme.txt</include>
                                         <include>DB_migration/</include>
                                     </includes>
                                 </resource>
