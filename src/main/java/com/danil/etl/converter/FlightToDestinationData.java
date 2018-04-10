@@ -1,6 +1,6 @@
-package com.danil.etl.task.converter;
+package com.danil.etl.converter;
 
-import com.danil.etl.entity.Aenaflight;
+import com.danil.etl.entity.Flight;
 import com.danil.etl.entity.DestinationData;
 import com.danil.etl.utils.DateTimeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -11,7 +11,7 @@ import java.time.LocalTime;
 
 public class FlightToDestinationData {
 
-    public DestinationData convert(Aenaflight flight) {
+    public DestinationData convert(Flight flight) {
         final DestinationData destinationData = new DestinationData();
 
         destinationData.setAdep(flight.getDepAptCodeIata());

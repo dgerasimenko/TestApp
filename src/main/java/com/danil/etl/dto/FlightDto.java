@@ -1,74 +1,69 @@
-package com.danil.etl.entity;
+package com.danil.etl.dto;
 
-import javax.persistence.*;
-import java.util.Objects;
+import com.danil.etl.utils.Stack;
 
-@Entity
-@Table(name = "aenaflight_2017_01")
-public class Aenaflight {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
+public class FlightDto {
+
     private Long id;
-    @Column(name="act_arr_date_time_lt")
+
     private String actArrDateTimeLt;
-    @Column(name="aircraft_name_scheduled")
+
     private String aircraftNameScheduled;
-    @Column(name="arr_apt_name_es")
+
     private String arrAptNameEs;
-    @Column(name="arr_apt_code_iata")
+
     private String arrAptCodeIata;
-    @Column(name="baggage_info")
-    private String baggageInfo;
-    @Column(name="carrier_airline_name_en")
+
+    private Stack<String> baggageInfo;
+
     private String carrierAirlineNameEn;
-    @Column(name="carrier_icao_code")
+
     private String carrierIcaoCode;
-    @Column(name="carrier_number")
+
     private String carrierNumber;
-    @Column
-    private String counter;
-    @Column(name="dep_apt_name_es")
+
+    private Stack<String> counter;
+
     private String depAptNameEs;
-    @Column(name="dep_apt_code_iata")
+
     private String depAptCodeIata;
-    @Column(name="est_arr_date_time_lt")
+
     private String estArrDateTimeLt;
-    @Column(name="est_dep_date_time_lt")
+
     private String estDepDateTimeLt;
-    @Column(name="flight_airline_name_en")
+
     private String flightAirlineNameEn;
-    @Column(name="flight_airline_name")
+
     private String flightAirlineName;
-    @Column(name="flight_icao_code")
+
     private String flightIcaoCode;
-    @Column(name="flight_number")
+
     private String flightNumber;
-    @Column(name="flt_leg_seq_no")
+
     private String fltLegSeqNo;
-    @Column(name="gate_info")
-    private String gateInfo;
-    @Column(name="lounge_info")
-    private String loungeInfo;
-    @Column(name="schd_arr_only_date_lt")
+
+    private Stack<String> gateInfo;
+
+    private Stack<String> loungeInfo;
+
     private String schdArrOnlyDateLt;
-    @Column(name="schd_arr_only_time_lt")
+
     private String schdArrOnlyTimeLt;
-    @Column(name="source_data")
+
     private String sourceData;
-    @Column(name="status_info")
+
     private String statusInfo;
-    @Column(name="terminal_info")
-    private String terminalInfo;
-    @Column(name="arr_terminal_info")
-    private String arrTerminalInfo;
-    @Column(name="created_at")
+
+    private Stack<String> terminalInfo;
+
+    private Stack<String> arrTerminalInfo;
+
     private Long createdAt;
-    @Column(name="act_dep_date_time_lt")
+
     private String actDepDateTimeLt;
-    @Column(name="schd_dep_only_date_lt")
+
     private String schdDepOnlyDateLt;
-    @Column(name="schd_dep_only_time_lt")
+
     private String schdDepOnlyTimeLt;
 
     public Long getId() {
@@ -111,11 +106,11 @@ public class Aenaflight {
         this.arrAptCodeIata = arrAptCodeIata;
     }
 
-    public String getBaggageInfo() {
+    public Stack<String> getBaggageInfo() {
         return baggageInfo;
     }
 
-    public void setBaggageInfo(String baggageInfo) {
+    public void setBaggageInfo(Stack<String> baggageInfo) {
         this.baggageInfo = baggageInfo;
     }
 
@@ -143,11 +138,11 @@ public class Aenaflight {
         this.carrierNumber = carrierNumber;
     }
 
-    public String getCounter() {
+    public Stack<String> getCounter() {
         return counter;
     }
 
-    public void setCounter(String counter) {
+    public void setCounter(Stack<String> counter) {
         this.counter = counter;
     }
 
@@ -223,19 +218,19 @@ public class Aenaflight {
         this.fltLegSeqNo = fltLegSeqNo;
     }
 
-    public String getGateInfo() {
+    public Stack<String> getGateInfo() {
         return gateInfo;
     }
 
-    public void setGateInfo(String gateInfo) {
+    public void setGateInfo(Stack<String> gateInfo) {
         this.gateInfo = gateInfo;
     }
 
-    public String getLoungeInfo() {
+    public Stack<String> getLoungeInfo() {
         return loungeInfo;
     }
 
-    public void setLoungeInfo(String loungeInfo) {
+    public void setLoungeInfo(Stack<String> loungeInfo) {
         this.loungeInfo = loungeInfo;
     }
 
@@ -271,19 +266,19 @@ public class Aenaflight {
         this.statusInfo = statusInfo;
     }
 
-    public String getTerminalInfo() {
+    public Stack<String> getTerminalInfo() {
         return terminalInfo;
     }
 
-    public void setTerminalInfo(String terminalInfo) {
+    public void setTerminalInfo(Stack<String> terminalInfo) {
         this.terminalInfo = terminalInfo;
     }
 
-    public String getArrTerminalInfo() {
+    public Stack<String> getArrTerminalInfo() {
         return arrTerminalInfo;
     }
 
-    public void setArrTerminalInfo(String arrTerminalInfo) {
+    public void setArrTerminalInfo(Stack<String> arrTerminalInfo) {
         this.arrTerminalInfo = arrTerminalInfo;
     }
 
@@ -317,42 +312,5 @@ public class Aenaflight {
 
     public void setSchdDepOnlyTimeLt(String schdDepOnlyTimeLt) {
         this.schdDepOnlyTimeLt = schdDepOnlyTimeLt;
-    }
-
-    @Override
-    public String toString() {
-        return "Aenaflight{" +
-                "id=" + id +
-                ", actArrDateTimeLt='" + actArrDateTimeLt + '\'' +
-                ", aircraftNameScheduled='" + aircraftNameScheduled + '\'' +
-                ", arrAptNameEs='" + arrAptNameEs + '\'' +
-                ", arrAptCodeIata='" + arrAptCodeIata + '\'' +
-                ", baggageInfo='" + baggageInfo + '\'' +
-                ", carrierAirlineNameEn='" + carrierAirlineNameEn + '\'' +
-                ", carrierIcaoCode='" + carrierIcaoCode + '\'' +
-                ", carrierNumber='" + carrierNumber + '\'' +
-                ", counter='" + counter + '\'' +
-                ", depAptNameEs='" + depAptNameEs + '\'' +
-                ", depAptCodeIata='" + depAptCodeIata + '\'' +
-                ", estArrDateTimeLt='" + estArrDateTimeLt + '\'' +
-                ", estDepDateTimeLt='" + estDepDateTimeLt + '\'' +
-                ", flightAirlineNameEn='" + flightAirlineNameEn + '\'' +
-                ", flightAirlineName='" + flightAirlineName + '\'' +
-                ", flightIcaoCode='" + flightIcaoCode + '\'' +
-                ", flightNumber='" + flightNumber + '\'' +
-                ", fltLegSeqNo='" + fltLegSeqNo + '\'' +
-                ", gateInfo='" + gateInfo + '\'' +
-                ", loungeInfo='" + loungeInfo + '\'' +
-                ", schdArrOnlyDateLt='" + schdArrOnlyDateLt + '\'' +
-                ", schdArrOnlyTimeLt='" + schdArrOnlyTimeLt + '\'' +
-                ", sourceData='" + sourceData + '\'' +
-                ", statusInfo='" + statusInfo + '\'' +
-                ", terminalInfo='" + terminalInfo + '\'' +
-                ", arrTerminalInfo='" + arrTerminalInfo + '\'' +
-                ", createdAt=" + createdAt +
-                ", actDepDateTimeLt='" + actDepDateTimeLt + '\'' +
-                ", schdDepOnlyDateLt='" + schdDepOnlyDateLt + '\'' +
-                ", schdDepOnlyTimeLt='" + schdDepOnlyTimeLt + '\'' +
-                '}';
     }
 }

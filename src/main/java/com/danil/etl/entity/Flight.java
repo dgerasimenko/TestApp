@@ -1,19 +1,14 @@
 package com.danil.etl.entity;
 
 import javax.persistence.*;
-import java.util.Objects;
 
 @Entity
-@Table(name = "aenaflight_tmp")
-public class AenaflightTmp {
+@Table(name = "aenaflight_2017_01")
+public class Flight {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private Long id;
-    @Column(name="start_index")
-    private Long startIndex;
-    @Column(name="end_index")
-    private Long endIndex;
     @Column(name="act_arr_date_time_lt")
     private String actArrDateTimeLt;
     @Column(name="aircraft_name_scheduled")
@@ -81,22 +76,6 @@ public class AenaflightTmp {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getStartIndex() {
-        return startIndex;
-    }
-
-    public void setStartIndex(Long startIndex) {
-        this.startIndex = startIndex;
-    }
-
-    public Long getEndIndex() {
-        return endIndex;
-    }
-
-    public void setEndIndex(Long endIndex) {
-        this.endIndex = endIndex;
     }
 
     public String getActArrDateTimeLt() {

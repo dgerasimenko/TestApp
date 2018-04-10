@@ -12,4 +12,9 @@ public class DestinationDataDao extends AbstractObjectDao<DestinationData> {
     public List<DestinationData> getAll() {
         return super.getAll(DestinationData.class);
     }
+
+    @Override
+    public void deleteAll() {
+
+    }
 }
