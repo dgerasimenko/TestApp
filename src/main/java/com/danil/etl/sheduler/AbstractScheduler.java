@@ -69,17 +69,13 @@ public abstract class AbstractScheduler {
                     final long chunkAmount = this.totalRecordsSize / chunkSize;
                     long timeEstimation = chunkAmount * this.taskTime.get();
 
-                    final String estimationMessage = String.format("Iteration %d. Estimated time to finish %s: %02d h %02d min %02d sec %02d milis.",
+                    final String estimationMessage = String.format("Iteration %d. Time to finish %s: %02d h %02d min.",
                             iteration,
                             task.getClass().getSimpleName(),
                             TimeUnit.MILLISECONDS.toHours(timeEstimation),
-                            TimeUnit.MILLISECONDS.toMinutes(timeEstimation) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeEstimation)),
-                            TimeUnit.MILLISECONDS.toSeconds(timeEstimation) -
-                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeEstimation)),
-                            timeEstimation -
-                                    TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(timeEstimation)));
+                            TimeUnit.MILLISECONDS.toMinutes(timeEstimation) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeEstimation)));
 
-                    System.out.print("\r" + estimationMessage + " Processing..." + progressAnimation.charAt(animationCounter % progressAnimation.length()) + " ");
+                    System.out.print("\r" + estimationMessage + "..." + progressAnimation.charAt(animationCounter % progressAnimation.length()) + " ");
                     animationCounter++;
                 }
             }
