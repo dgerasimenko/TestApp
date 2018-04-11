@@ -87,7 +87,7 @@ public class Transformer {
                 if (tmpChunkSize > 0) {
                     long timeEstimation = chunkAmount * taskTime.get();
 
-                    final String estimationMessage = String.format("Estimated time: %02d min",
+                    final String estimationMessage = String.format("Estimated time: %02d min.",
                             TimeUnit.MILLISECONDS.toMinutes(timeEstimation));
 
                     System.out.print("\r" + estimationMessage + " Transformation..." + progressAnimation.charAt(animationCounter % progressAnimation.length()));
