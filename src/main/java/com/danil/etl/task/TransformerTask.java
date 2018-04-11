@@ -13,30 +13,28 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class ScrapperTask implements Runnable {
+public class TransformerTask implements Runnable {
     private static final char SEPARATOR = ',';
     private FlightDao flightDao;
     private final TaskInfoDao taskInfoDao;
     private final List<Flight> chunk;
-    private final AtomicInteger chunkWithDuplicates;
     private final AtomicLong taskTime;
-    private final AtomicLong totalHandledRecords;
+    private final AtomicBoolean needMoreIterations;
 
     private TaskInfo taskInfo;
     private TaskServiceInfo serviceInfo;
     private Map<TransformTaskStatus, ITaskStageProcessor> TASK_STAGE_2_PROCESSOR = new HashMap<>();
 
-    public ScrapperTask(FlightDao flightDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong totalHandledRecords, AtomicInteger chunkWithDuplicates, AtomicLong taskTime) {
+    public TransformerTask(FlightDao flightDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime, AtomicBoolean needMoreIterations) {
         this.flightDao = flightDao;
         this.taskInfoDao = taskInfoDao;
-        this.totalHandledRecords = totalHandledRecords;
         this.chunk = chunk;
-        this.chunkWithDuplicates = chunkWithDuplicates;
         this.taskTime = taskTime;
+        this.needMoreIterations = needMoreIterations;
         if (taskInfoPrevRun != null) {
             this.taskInfo = taskInfoPrevRun;
         } else {
@@ -44,6 +42,7 @@ public class ScrapperTask implements Runnable {
             newTaskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
             newTaskInfo.setStartIndex(chunk.get(0).getId());
             newTaskInfo.setEndIndex(chunk.get(chunk.size() - 1).getId());
+            newTaskInfo.setTaskType(this.getClass().getSimpleName());
             this.taskInfo = newTaskInfo;
         }
         initTaskStrageProcessors();
@@ -58,7 +57,7 @@ public class ScrapperTask implements Runnable {
                     if (CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted())) {
                         throw new ChunkTransformNotNeededException();
                     } else {
-                        chunkWithDuplicates.incrementAndGet();
+                        this.needMoreIterations.set(true);
                     }
                     changeTaskStatus(TransformTaskStatus.TRANSFORM);
                 });
@@ -80,6 +79,7 @@ public class ScrapperTask implements Runnable {
 
     @Override
     public void run() {
+        try {
             final long startTime = System.currentTimeMillis();
             TransformTaskStatus taskStage = this.taskInfo.getTaskStage();
             if (TransformTaskStatus.EXTRACT.equals(taskStage) && CollectionUtils.isEmpty(chunk)) {
@@ -90,10 +90,8 @@ public class ScrapperTask implements Runnable {
                     taskStage = taskStage.next();
                     TASK_STAGE_2_PROCESSOR.get(taskStage).process();
                 }
-                this.totalHandledRecords.addAndGet(this.serviceInfo.getMergedRecords().size());
             } catch (ChunkTransformNotNeededException ex) {
-            }
-            finally {
+            } finally {
                 if (this.taskInfo.getId() != null) {
                     this.taskInfoDao.deleteById(this.taskInfo.getId());
                 }
@@ -101,6 +99,9 @@ public class ScrapperTask implements Runnable {
             final long endTime = System.currentTimeMillis();
             final long totalTimeInMilis = endTime - startTime;
             this.taskTime.set(totalTimeInMilis);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void changeTaskStatus(TransformTaskStatus taskStage) {

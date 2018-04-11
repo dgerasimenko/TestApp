@@ -12,9 +12,15 @@ import java.util.List;
 @Transactional
 public class TaskInfoDao extends AbstractObjectDao<TaskInfo> {
 
-    public List<TaskInfo> getOrderedByStart() {
-        final Query query = entityManager.createQuery("FROM TaskInfo t ORDER BY t.startIndex ASC");
+    public List<TaskInfo> getOrderedByStart(Class taskType) {
+        final Query query = entityManager.createQuery("FROM TaskInfo t WHERE t.taskType=:taskType ORDER BY t.startIndex ASC")
+                .setParameter("taskType", taskType.getSimpleName());
         return query.getResultList();
+    }
+
+    public void deleteAll() {
+        final String sql = "TRUNCATE TABLE task_info;";
+        entityManager.createNativeQuery(sql).executeUpdate();
     }
 
     public void deleteById(Long id) {

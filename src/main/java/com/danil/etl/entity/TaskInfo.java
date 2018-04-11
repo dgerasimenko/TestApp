@@ -13,6 +13,8 @@ public class TaskInfo {
     private Long startIndex;
     @Column(name = "end_index")
     private Long endIndex;
+    @Column(name = "task_type")
+    private String taskType;
     @Column(name = "task_status")
     @Enumerated(EnumType.STRING)
     private TransformTaskStatus taskStage;
@@ -41,6 +43,14 @@ public class TaskInfo {
 
     public void setEndIndex(Long endIndex) {
         this.endIndex = endIndex;
+    }
+
+    public String getTaskType() {
+        return taskType;
+    }
+
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
     }
 
     public TransformTaskStatus getTaskStage() {

@@ -6,6 +6,7 @@ CREATE TABLE task_info
   id bigserial NOT NULL PRIMARY KEY,
   start_index bigint not null,
   end_index bigint not null,
+  task_type character varying(20) not null,
   task_status character varying(20) not null,
   service_information text
 );

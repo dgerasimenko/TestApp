@@ -2,6 +2,7 @@ package com.danil.etl.entity;
 
 
 public enum TransformTaskStatus {
+    LOAD(null),
     DELETE_DUPLICATES(null),
     INSERT_ONE_RECORD(DELETE_DUPLICATES),
     TRANSFORM(INSERT_ONE_RECORD),

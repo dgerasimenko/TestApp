@@ -30,7 +30,7 @@ public class FlightDao extends AbstractObjectDao<Flight> {
         return list;
     }
 
-    public Long getApproximatedRawsCount() {
+    public Long getApproximatedRowsCount() {
         Long count;
         try {
             final Query hql = entityManager
