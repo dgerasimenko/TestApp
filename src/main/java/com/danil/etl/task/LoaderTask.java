@@ -1,25 +1,15 @@
 package com.danil.etl.task;
 
-import com.danil.etl.ChunkTransformNotNeededException;
-import com.danil.etl.collector.FlightCollector;
 import com.danil.etl.converter.FlightToDestinationData;
 import com.danil.etl.dao.AbstractObjectDao;
-import com.danil.etl.dao.DestinationDataDao;
-import com.danil.etl.dao.FlightDao;
 import com.danil.etl.dao.TaskInfoDao;
 import com.danil.etl.entity.DestinationData;
 import com.danil.etl.entity.Flight;
 import com.danil.etl.entity.TaskInfo;
 import com.danil.etl.entity.TransformTaskStatus;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
-
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 public class LoaderTask implements Runnable {
 
@@ -70,9 +60,5 @@ public class LoaderTask implements Runnable {
     private void changeTaskStatus(TransformTaskStatus taskStage) {
         this.taskInfo.setTaskStage(taskStage);
         this.taskInfo = taskInfoDao.merge(this.taskInfo);
-    }
-
-    private interface ITaskStageProcessor {
-        void process() throws ChunkTransformNotNeededException;
     }
 }

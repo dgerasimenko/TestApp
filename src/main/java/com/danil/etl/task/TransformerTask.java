@@ -72,6 +72,7 @@ public class TransformerTask implements Runnable {
                     final List<Long> idsToBeDeleted = serviceInfo == null || CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted()) ?
                             Arrays.asList(StringUtils.split(taskInfo.getServiceInformation(), SEPARATOR)).stream().map(str -> Long.valueOf(str)).collect(Collectors.toList())
                             : serviceInfo.getRecordIdsToBeDeleted();
+                    flightDao.deleteByIds(idsToBeDeleted);
                     changeTaskStatus(TransformTaskStatus.DELETE_DUPLICATES);
                 });
     }
