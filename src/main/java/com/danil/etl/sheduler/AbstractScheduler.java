@@ -80,7 +80,7 @@ public abstract class AbstractScheduler {
                     final long chunkAmount = this.totalRecordsSize / chunkSize;
                     long timeEstimation = chunkAmount * this.taskTime.get();
 
-                    final String estimationMessage = String.format("Estimated time to finish %d iteration of %s: %02d h %02d min %02d sec %02d milis.",
+                    final String estimationMessage = String.format("Iteration %d. Estimated time to finish %s: %02d h %02d min %02d sec %02d milis.",
                             iteration,
                             task.getClass().getSimpleName(),
                             TimeUnit.MILLISECONDS.toHours(timeEstimation),
@@ -102,7 +102,7 @@ public abstract class AbstractScheduler {
         }
         boolean done = false;
         try {
-            done = executor.awaitTermination((poolSize + taskQueueSize) * this.taskTime.longValue(), TimeUnit.MINUTES);
+            done = executor.awaitTermination((poolSize + taskQueueSize) * 10, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             System.out.println("Await termination Interrupted => " + ex.getMessage());
             executor.shutdownNow();
