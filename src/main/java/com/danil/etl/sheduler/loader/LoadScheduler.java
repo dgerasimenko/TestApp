@@ -19,11 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class LoadScheduler extends AbstractScheduler {
-    @Autowired
-    private DestinationDataDao destinationDataDao;
-
-    @Autowired
-    private FlightDao flightDao;
 
     @Override
     public void schedule() {
@@ -41,9 +36,7 @@ public class LoadScheduler extends AbstractScheduler {
         if (CollectionUtils.isEmpty(currentProcessingState)) {
             return 0l;
         } else {
-            final List<Flight> chunk = flightDao.getNextChunk(currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex(), chunkSize);
-            executor.submit(getTask(destinationDataDao, taskInfoDao, chunk, null, taskTime, needMoreIterations));
-            return chunk.get(chunk.size() - 1).getId();
+            return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
         }
     }
 
