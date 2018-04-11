@@ -19,9 +19,11 @@ public class Loader {
     private FlightDao flightDao;
 
     public void loadDataFromSource() {
+        System.out.print("Loading... ");
         final List<Flight> flights = flightDao.getAll();
         final FlightToDestinationData converter = new FlightToDestinationData();
         final List<DestinationData> destinationData = converter.convert(flights);
         destinationDataDao.persistAll(destinationData);
+        System.out.println(".Done");
     }
 }

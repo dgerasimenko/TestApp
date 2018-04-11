@@ -49,7 +49,7 @@ public class Transformer {
             extractAndTransform(chunkWithDuplicates);
             totalRecordsSize = totalHandledRecords.longValue();
         }
-        System.out.println("\rTransformation....Done");
+        System.out.println("\rTransformation.... Done");
     }
 
     public void extractAndTransform(AtomicInteger chunkWithDuplicatesCounter) {
@@ -89,7 +89,7 @@ public class Transformer {
                     final String estimationMessage = String.format("Estimated time: %02d min.",
                             TimeUnit.MILLISECONDS.toMinutes(timeEstimation));
 
-                    System.out.print("\r" + estimationMessage + " Transformation..." + progressAnimation.charAt(animationCounter % progressAnimation.length()));
+                    System.out.print("\r" + estimationMessage + " Transformation..." + progressAnimation.charAt(animationCounter % progressAnimation.length()) + " ");
                     animationCounter++;
                 }
             }

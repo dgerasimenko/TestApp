@@ -19,10 +19,9 @@ private Loader loader;
     public void doJob() {
         System.out.println("Starting...");
         final long startTime = System.currentTimeMillis();
+
         transformer.extractAndTransform();
-        System.out.print("Loading...");
         loader.loadDataFromSource();
-        System.out.println(".Done");
 
         final long endTime = System.currentTimeMillis();
         final long totalTimeInMilis = endTime - startTime;
