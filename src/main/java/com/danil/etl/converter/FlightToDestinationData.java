@@ -8,10 +8,20 @@ import org.apache.commons.lang.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FlightToDestinationData {
 
-    public DestinationData convert(Flight flight) {
+    public List<DestinationData> convert(List<Flight> flights) {
+        final List<DestinationData> result = new ArrayList<>();
+        for(Flight flight : flights) {
+            result.add(convert(flight));
+        }
+        return result;
+    }
+
+    private DestinationData convert(Flight flight) {
         final DestinationData destinationData = new DestinationData();
 
         destinationData.setAdep(flight.getDepAptCodeIata());

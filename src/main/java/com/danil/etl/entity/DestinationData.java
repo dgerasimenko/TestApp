@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "destination_data")
+@Table(name = "aenaflight_source")
 public class DestinationData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

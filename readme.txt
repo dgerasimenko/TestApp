@@ -5,4 +5,4 @@
  - run migration script from:
     > psql -d aenaflight -U postgres -f DB_migration/migration.sql
 2)Run application:
-    > java -jar ETL-1.0.jar
+    > java -jar ETL-2.0.jar

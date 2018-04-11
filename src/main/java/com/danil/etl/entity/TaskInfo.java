@@ -15,7 +15,7 @@ public class TaskInfo {
     private Long endIndex;
     @Column(name = "task_status")
     @Enumerated(EnumType.STRING)
-    private TaskStage taskStage;
+    private TransformTaskStatus taskStage;
     @Column(name = "service_information")
     private String serviceInformation;
 
@@ -43,11 +43,11 @@ public class TaskInfo {
         this.endIndex = endIndex;
     }
 
-    public TaskStage getTaskStage() {
+    public TransformTaskStatus getTaskStage() {
         return taskStage;
     }
 
-    public void setTaskStage(TaskStage taskStage) {
+    public void setTaskStage(TransformTaskStatus taskStage) {
         this.taskStage = taskStage;
     }
 

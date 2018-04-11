@@ -20,13 +20,23 @@ public abstract class AbstractObjectDao<O> {
     @Value("${batch.size}")
     private int batchSize;
 
-    public abstract void deleteAll();
-
     public O merge(O aenaflightTmp) {
         return entityManager.merge(aenaflightTmp);
     }
 
-    public void persist(Collection<O> entities) {
+    public void persistAll(Collection<O> entities) {
+        int i = 0;
+        for (O entity : entities) {
+            entityManager.persist(entity);
+            i++;
+        }
+        if (i % batchSize == 0) {
+            entityManager.flush();
+            entityManager.clear();
+        }
+    }
+
+    public void mergeAll(Collection<O> entities) {
         int i = 0;
         for (O entity : entities) {
             entityManager.merge(entity);
@@ -38,7 +48,7 @@ public abstract class AbstractObjectDao<O> {
         }
     }
 
-    public void persist(O aenaflightTmp) {
+    public void mergeAll(O aenaflightTmp) {
         entityManager.persist(aenaflightTmp);
     }
 

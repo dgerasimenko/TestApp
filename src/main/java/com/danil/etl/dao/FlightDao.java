@@ -17,15 +17,6 @@ public class FlightDao extends AbstractObjectDao<Flight> {
         super.deleteByIds(Flight.class, id);
     }
 
-    public void deleteById(Long id) {
-        super.deleteByIds(Flight.class, Arrays.asList(id));
-    }
-
-    public void deleteAll() {
-        final String sql = "TRUNCATE TABLE aenaflight_2017_01;";
-        entityManager.createNativeQuery(sql).executeUpdate();
-    }
-
     public List<Flight> getNextChunk(Long prevRecordId, int limit) {
         final Query hql = entityManager
                 .createQuery("FROM Flight f WHERE f.id > :prevRecordId ORDER BY f.id")
@@ -35,7 +26,7 @@ public class FlightDao extends AbstractObjectDao<Flight> {
         return list;
     }
 
-    public Class<Flight> getWorkingEntityClass() {
-        return Flight.class;
+    public List<Flight> getAll() {
+        return super.getAll(Flight.class);
     }
 }

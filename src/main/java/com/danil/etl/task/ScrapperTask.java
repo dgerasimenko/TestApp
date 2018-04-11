@@ -5,38 +5,43 @@ import com.danil.etl.dao.FlightDao;
 import com.danil.etl.dao.TaskInfoDao;
 import com.danil.etl.entity.*;
 import com.danil.etl.collector.FlightCollector;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class ScrapperTask implements Runnable {
-
+    private static final char SEPARATOR = ',';
     private FlightDao flightDao;
     private final TaskInfoDao taskInfoDao;
     private final List<Flight> chunk;
-    private final AtomicInteger counter;
+    private final AtomicInteger chunkWithDuplicates;
     private final AtomicLong taskTime;
+    private final AtomicLong totalHandledRecords;
 
     private TaskInfo taskInfo;
     private TaskServiceInfo serviceInfo;
-    private Map<TaskStage, ITaskStageProcessor> TASK_STAGE_2_PROCESSOR = new HashMap<>();
+    private Map<TransformTaskStatus, ITaskStageProcessor> TASK_STAGE_2_PROCESSOR = new HashMap<>();
 
-    public ScrapperTask(FlightDao flightDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicInteger counter, AtomicLong taskTime) {
+    public ScrapperTask(FlightDao flightDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong totalHandledRecords, AtomicInteger chunkWithDuplicates, AtomicLong taskTime) {
         this.flightDao = flightDao;
         this.taskInfoDao = taskInfoDao;
+        this.totalHandledRecords = totalHandledRecords;
         this.chunk = chunk;
-        this.counter = counter;
+        this.chunkWithDuplicates = chunkWithDuplicates;
         this.taskTime = taskTime;
         if (taskInfoPrevRun != null) {
             this.taskInfo = taskInfoPrevRun;
         } else {
             final TaskInfo newTaskInfo = new TaskInfo();
-            newTaskInfo.setTaskStage(TaskStage.EXTRACT);
+            newTaskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
             newTaskInfo.setStartIndex(chunk.get(0).getId());
             newTaskInfo.setEndIndex(chunk.get(chunk.size() - 1).getId());
             this.taskInfo = newTaskInfo;
@@ -45,41 +50,44 @@ public class ScrapperTask implements Runnable {
     }
 
     private void initTaskStrageProcessors() {
-        TASK_STAGE_2_PROCESSOR.put(TaskStage.TRANSFORM,
+
+        TASK_STAGE_2_PROCESSOR.put(TransformTaskStatus.TRANSFORM,
                 () -> {
                     final FlightCollector collector = new FlightCollector();
                     serviceInfo = collector.orderBy(chunk);
+
+                    if (true) {
+                        throw new ChunkTransformNotNeededException();
+                    }
+
                     if (CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted())) {
                         throw new ChunkTransformNotNeededException();
                     } else {
-                        counter.incrementAndGet();
+                        chunkWithDuplicates.incrementAndGet();
                     }
+                    changeTaskStatus(TransformTaskStatus.TRANSFORM);
                 });
-        TASK_STAGE_2_PROCESSOR.put(TaskStage.INSERT_ONE_RECORD,
+        TASK_STAGE_2_PROCESSOR.put(TransformTaskStatus.INSERT_ONE_RECORD,
                 () -> {
-                    flightDao.persist(serviceInfo.getMergedRecords().values());
-                    changeTaskStatus(TaskStage.INSERT_ONE_RECORD);
+                    flightDao.mergeAll(serviceInfo.getMergedRecords().values());
+                    taskInfo.setServiceInformation(StringUtils.join(serviceInfo.getRecordIdsToBeDeleted(), SEPARATOR));
+                    changeTaskStatus(TransformTaskStatus.INSERT_ONE_RECORD);
                 });
-        TASK_STAGE_2_PROCESSOR.put(TaskStage.DELETE_DUPLICATES,
+        TASK_STAGE_2_PROCESSOR.put(TransformTaskStatus.DELETE_DUPLICATES,
                 () -> {
-                   // flightDao.deleteByIds(serviceInfo.getRecordIdsToBeDeleted());
-                    changeTaskStatus(TaskStage.DELETE_DUPLICATES);
-                });
-        TASK_STAGE_2_PROCESSOR.put(TaskStage.LOAD,
-                () -> {
-                    changeTaskStatus(TaskStage.LOAD);
+                    final List<Long> idsToBeDeleted = serviceInfo == null || CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted()) ?
+                            Arrays.asList(StringUtils.split(taskInfo.getServiceInformation(), SEPARATOR)).stream().map(str -> Long.valueOf(str)).collect(Collectors.toList())
+                            : serviceInfo.getRecordIdsToBeDeleted();
+                    flightDao.deleteByIds(idsToBeDeleted);
+                    changeTaskStatus(TransformTaskStatus.DELETE_DUPLICATES);
                 });
     }
 
     @Override
     public void run() {
-        try {
-
             final long startTime = System.currentTimeMillis();
-
-            TaskStage taskStage = this.taskInfo.getTaskStage();
-
-            if (TaskStage.EXTRACT.equals(taskStage) && CollectionUtils.isEmpty(chunk)) {
+            TransformTaskStatus taskStage = this.taskInfo.getTaskStage();
+            if (TransformTaskStatus.EXTRACT.equals(taskStage) && CollectionUtils.isEmpty(chunk)) {
                 return;
             }
             try {
@@ -87,26 +95,20 @@ public class ScrapperTask implements Runnable {
                     taskStage = taskStage.next();
                     TASK_STAGE_2_PROCESSOR.get(taskStage).process();
                 }
-                taskInfoDao.deleteById(this.taskInfo.getId());
+                this.totalHandledRecords.addAndGet(this.serviceInfo.getMergedRecords().size());
             } catch (ChunkTransformNotNeededException ex) {
-                return;
             }
-
+            finally {
+                if (this.taskInfo.getId() != null) {
+                    this.taskInfoDao.deleteById(this.taskInfo.getId());
+                }
+            }
             final long endTime = System.currentTimeMillis();
             final long totalTimeInMilis = endTime - startTime;
-            taskTime.set(totalTimeInMilis);
-            System.out.println(
-                    String.format("Total spent time: %02d min %02d sec",
-                            TimeUnit.MILLISECONDS.toMinutes(totalTimeInMilis),
-                            TimeUnit.MILLISECONDS.toSeconds(totalTimeInMilis) -
-                                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeInMilis))));
-        } catch (Exception ex) {
-            System.out.println("Exception happened in Scrapper Task. start_index=" + chunk.get(0).getId() + " end_index=" + chunk.get(chunk.size() - 1).getId());
-            ex.printStackTrace();
-        }
+            this.taskTime.set(totalTimeInMilis);
     }
 
-    private void changeTaskStatus(TaskStage taskStage) {
+    private void changeTaskStatus(TransformTaskStatus taskStage) {
         this.taskInfo.setTaskStage(taskStage);
         this.taskInfo = taskInfoDao.merge(this.taskInfo);
     }

@@ -1,17 +1,16 @@
 package com.danil.etl.entity;
 
 
-public enum TaskStage {
-    LOAD(null),
-    DELETE_DUPLICATES(LOAD),
+public enum TransformTaskStatus {
+    DELETE_DUPLICATES(null),
     INSERT_ONE_RECORD(DELETE_DUPLICATES),
     TRANSFORM(INSERT_ONE_RECORD),
     EXTRACT(TRANSFORM);
 
-    private final TaskStage nextStage;
+    private final TransformTaskStatus nextStage;
     private final boolean hasNext;
 
-    TaskStage(TaskStage nextStage) {
+    TransformTaskStatus(TransformTaskStatus nextStage) {
         this.nextStage = nextStage;
         this.hasNext = nextStage != null;
     }
@@ -20,7 +19,7 @@ public enum TaskStage {
         return hasNext;
     }
 
-    public TaskStage next() {
+    public TransformTaskStatus next() {
         return nextStage;
     }
 
