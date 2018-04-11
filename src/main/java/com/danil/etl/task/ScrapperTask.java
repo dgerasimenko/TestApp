@@ -55,11 +55,6 @@ public class ScrapperTask implements Runnable {
                 () -> {
                     final FlightCollector collector = new FlightCollector();
                     serviceInfo = collector.orderBy(chunk);
-
-                    if (true) {
-                        throw new ChunkTransformNotNeededException();
-                    }
-
                     if (CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted())) {
                         throw new ChunkTransformNotNeededException();
                     } else {
