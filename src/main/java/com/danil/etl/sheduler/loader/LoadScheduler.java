@@ -10,6 +10,7 @@ import com.danil.etl.sheduler.AbstractScheduler;
 import com.danil.etl.task.LoaderTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -33,11 +34,17 @@ public class LoadScheduler extends AbstractScheduler {
     }
 
     @Override
-    public Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
-         System.out.println("WARN. Loading resumed.");
-         final List<Flight> chunk = flightDao.getNextChunk(currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex(), chunkSize);
-         executor.submit(getTask(destinationDataDao, taskInfoDao, chunk, null, taskTime, needMoreIterations));
-         return chunk.get(chunk.size() - 1).getId();
+    public Long resumeTasks(ExecutorService executor, AtomicBoolean needMoreIterations) {
+        System.out.println("WARN. Loading resumed.");
+
+        final List<TaskInfo> currentProcessingState = taskInfoDao.getTaskInfo(getTaskType());
+        if (CollectionUtils.isEmpty(currentProcessingState)) {
+            return 0l;
+        } else {
+            final List<Flight> chunk = flightDao.getNextChunk(currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex(), chunkSize);
+            executor.submit(getTask(destinationDataDao, taskInfoDao, chunk, null, taskTime, needMoreIterations));
+            return chunk.get(chunk.size() - 1).getId();
+        }
     }
 
     @Override

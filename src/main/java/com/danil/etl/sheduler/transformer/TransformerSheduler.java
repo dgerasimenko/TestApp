@@ -9,7 +9,9 @@ import com.danil.etl.task.TransformerTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,6 +53,7 @@ public class TransformerSheduler extends AbstractScheduler {
             execute(needMoreIterations, iteration);
             totalRecordsSize = mergedRecords.longValue();
         }
+        taskInfoDao.deleteAll();
         System.out.println("\rTransformation.... Done");
     }
 
@@ -64,16 +67,29 @@ public class TransformerSheduler extends AbstractScheduler {
         return TransformerTask.class;
     }
 
-    public Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
+    @Override
+    public Long resumeTasks(ExecutorService executor, AtomicBoolean needMoreIterations) {
         System.out.println("WARN. Transformation resumed.");
-        for (TaskInfo taskInfo : currentProcessingState) {
-            List<Flight> chunk = null;
-            if (TransformTaskStatus.TRANSFORM.equals(taskInfo.getTaskStage())) {
-                chunk = flightDao.getNextChunk(taskInfo.getStartIndex(), chunkSize);
-                taskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
+
+        List<TaskInfo> currentProcessingState = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.TRANSFORM));
+        if (CollectionUtils.isEmpty(currentProcessingState)) {
+            currentProcessingState = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.DELETE_DUPLICATES));
+            if (CollectionUtils.isEmpty(currentProcessingState)) {
+                return 0l;
+            } else {
+                return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
             }
-            executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations));
+        } else {
+
+            for (TaskInfo taskInfo : currentProcessingState) {
+                List<Flight> chunk = null;
+                if (TransformTaskStatus.TRANSFORM.equals(taskInfo.getTaskStage())) {
+                    chunk = flightDao.getNextChunk(taskInfo.getStartIndex(), chunkSize);
+                    taskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
+                }
+                executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations));
+            }
+            return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
         }
-        return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
     }
 }

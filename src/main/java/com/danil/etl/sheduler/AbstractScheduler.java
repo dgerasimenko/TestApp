@@ -1,13 +1,10 @@
 package com.danil.etl.sheduler;
 
 import com.danil.etl.dao.AbstractObjectDao;
-import com.danil.etl.dao.DestinationDataDao;
 import com.danil.etl.dao.FlightDao;
 import com.danil.etl.dao.TaskInfoDao;
 import com.danil.etl.entity.Flight;
 import com.danil.etl.entity.TaskInfo;
-import com.danil.etl.entity.TransformTaskStatus;
-import com.danil.etl.task.TransformerTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
@@ -40,7 +37,7 @@ public abstract class AbstractScheduler {
 
     public abstract void schedule();
 
-    public abstract Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations);
+    public abstract Long resumeTasks(ExecutorService executor, AtomicBoolean needMoreIterations);
     public abstract Runnable getTask(AbstractObjectDao destinationDataDao, TaskInfoDao taskInfoDao,
                                      List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime, AtomicBoolean needMoreIterations);
     public abstract Class getTaskType();
@@ -50,15 +47,7 @@ public abstract class AbstractScheduler {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(this.taskQueueSize);
         final ExecutorService executor = new ThreadPoolExecutor(1, this.poolSize, 0L, TimeUnit.MILLISECONDS, queue);
 
-        final List<TaskInfo> currentProcessingState = taskInfoDao.getOrderedByStart(getTaskType());
-        final Long prevRecordId;
-
-        if (CollectionUtils.isEmpty(currentProcessingState)) {
-            prevRecordId = 0l;
-        } else {
-            prevRecordId = resumeTasks(executor, currentProcessingState, needMoreIterations);
-        }
-
+        final Long prevRecordId = resumeTasks(executor, needMoreIterations);
         try {
             List<Flight> chunk = this.flightDao.getNextChunk(prevRecordId, chunkSize);
             int tmpChunkSize = chunk.size();
