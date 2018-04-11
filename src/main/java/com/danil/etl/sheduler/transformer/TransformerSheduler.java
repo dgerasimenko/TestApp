@@ -44,9 +44,11 @@ public class TransformerSheduler extends AbstractScheduler {
         final AtomicBoolean needMoreIterations = new AtomicBoolean();
         needMoreIterations.set(true);
         totalRecordsSize = flightDao.getApproximatedRowsCount();
+        int iteration = 0;
         while (needMoreIterations.get()) {
+            iteration++;
             needMoreIterations.set(false);
-            execute(needMoreIterations);
+            execute(needMoreIterations, iteration);
             totalRecordsSize = mergedRecords.longValue();
         }
         System.out.println("\rTransformation.... Done");
@@ -63,7 +65,7 @@ public class TransformerSheduler extends AbstractScheduler {
     }
 
     public Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
-        System.out.println("WARN. Loading resumed.");
+        System.out.println("WARN. Transformation resumed.");
         for (TaskInfo taskInfo : currentProcessingState) {
             List<Flight> chunk = null;
             if (TransformTaskStatus.TRANSFORM.equals(taskInfo.getTaskStage())) {

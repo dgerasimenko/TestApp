@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
-@PropertySource("file:db_config.properties")
+@PropertySource("file:app_config.properties")
 public class EntryPoint implements CommandLineRunner {
 
     @Autowired

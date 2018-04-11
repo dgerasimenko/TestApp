@@ -68,7 +68,7 @@
                                     <directory>${project.basedir}</directory>
                                     <filtering>true</filtering>
                                     <includes>
-                                        <include>db_config.properties</include>
+                                        <include>app_config.properties</include>
 										<include>readme.txt</include>
                                         <include>DB_migration/</include>
                                     </includes>

@@ -27,7 +27,7 @@ public class LoadScheduler extends AbstractScheduler {
     @Override
     public void schedule() {
         System.out.println("Loading.... Started");
-        execute(null);
+        execute(null, 1);
         taskInfoDao.deleteAll();
         System.out.println("\rLoading.... Done");
     }
