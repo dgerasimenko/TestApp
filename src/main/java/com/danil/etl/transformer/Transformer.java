@@ -38,13 +38,12 @@ public class Transformer {
     @Value("${chunk.size}")
     private int chunkSize;
 
-    @Value("${total.records.size}")
     private long totalRecordsSize;
 
     public void extractAndTransform() {
         final AtomicInteger chunkWithDuplicates = new AtomicInteger();
         chunkWithDuplicates.incrementAndGet();
-
+        totalRecordsSize = flightDao.getApproximatedRawsCount();
         while (chunkWithDuplicates.intValue() != 0) {
             chunkWithDuplicates.set(0);
             extractAndTransform(chunkWithDuplicates);

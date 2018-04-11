@@ -26,6 +26,13 @@ public class FlightDao extends AbstractObjectDao<Flight> {
         return list;
     }
 
+    public Long getApproximatedRawsCount() {
+        final Query hql = entityManager
+                .createNativeQuery("SELECT reltuples AS estimate FROM pg_class where relname='aenaflight_2017_01';");
+        final Double count = Double.valueOf(hql.getSingleResult().toString());
+        return count.longValue();
+    }
+
     public List<Flight> getAll() {
         return super.getAll(Flight.class);
     }
