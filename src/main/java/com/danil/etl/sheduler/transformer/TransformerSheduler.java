@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TransformerSheduler extends AbstractScheduler {
 
     private final AtomicLong taskTime = new AtomicLong();
-    private final AtomicLong mergedRecords = new AtomicLong();
 
     @Autowired
     private FlightDao flightDao;
@@ -51,7 +50,7 @@ public class TransformerSheduler extends AbstractScheduler {
             iteration++;
             needMoreIterations.set(false);
             execute(needMoreIterations, iteration);
-            totalRecordsSize = mergedRecords.longValue();
+            taskInfoDao.deleteAll();
         }
         taskInfoDao.deleteAll();
         System.out.println("\rTransformation.... Done");
