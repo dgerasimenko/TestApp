@@ -40,7 +40,7 @@ public abstract class AbstractScheduler {
 
     public abstract void schedule();
 
-    public abstract void resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations);
+    public abstract Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations);
     public abstract Runnable getTask(AbstractObjectDao destinationDataDao, TaskInfoDao taskInfoDao,
                                      List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime, AtomicBoolean needMoreIterations);
     public abstract Class getTaskType();
@@ -56,8 +56,7 @@ public abstract class AbstractScheduler {
         if (CollectionUtils.isEmpty(currentProcessingState)) {
             prevRecordId = 0l;
         } else {
-            resumeTasks(executor, currentProcessingState, needMoreIterations);
-            prevRecordId = currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
+            prevRecordId = resumeTasks(executor, currentProcessingState, needMoreIterations);
         }
 
         try {

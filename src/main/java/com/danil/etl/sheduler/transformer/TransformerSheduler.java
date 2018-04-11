@@ -62,7 +62,7 @@ public class TransformerSheduler extends AbstractScheduler {
         return TransformerTask.class;
     }
 
-    public void resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
+    public Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
         System.out.println("WARN. Loading resumed.");
         for (TaskInfo taskInfo : currentProcessingState) {
             List<Flight> chunk = null;
@@ -72,5 +72,6 @@ public class TransformerSheduler extends AbstractScheduler {
             }
             executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations));
         }
+        return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
     }
 }

@@ -33,11 +33,11 @@ public class LoadScheduler extends AbstractScheduler {
     }
 
     @Override
-    public void resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
+    public Long resumeTasks(ExecutorService executor, List<TaskInfo> currentProcessingState, AtomicBoolean needMoreIterations) {
          System.out.println("WARN. Loading resumed.");
          final List<Flight> chunk = flightDao.getNextChunk(currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex(), chunkSize);
          executor.submit(getTask(destinationDataDao, taskInfoDao, chunk, null, taskTime, needMoreIterations));
-
+         return chunk.get(chunk.size() - 1).getId();
     }
 
     @Override
