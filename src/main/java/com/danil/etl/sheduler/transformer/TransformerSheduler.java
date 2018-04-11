@@ -80,13 +80,9 @@ public class TransformerSheduler extends AbstractScheduler {
                 return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
             }
         } else {
-
             for (TaskInfo taskInfo : currentProcessingState) {
-                List<Flight> chunk = null;
-                if (TransformTaskStatus.TRANSFORM.equals(taskInfo.getTaskStage())) {
-                    chunk = flightDao.getNextChunk(taskInfo.getStartIndex(), chunkSize);
+                final List<Flight> chunk = flightDao.getNextChunk(taskInfo.getStartIndex(), chunkSize);
                     taskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
-                }
                 executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations));
             }
             return currentProcessingState.get(currentProcessingState.size() - 1).getEndIndex();
