@@ -20,7 +20,7 @@ private LoadScheduler loadScheduler;
         System.out.println("Starting...");
         final long startTime = System.currentTimeMillis();
 
-     //   transformerSheduler.schedule();
+        transformerSheduler.schedule();
         loadScheduler.schedule();
 
         final long endTime = System.currentTimeMillis();
