@@ -1,4 +1,4 @@
-package com.danil.etl;
+package com.danil.etl.exception;
 
 public class ChunkTransformNotNeededException extends Exception {
 

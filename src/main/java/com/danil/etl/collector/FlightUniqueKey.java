@@ -1,4 +1,6 @@
-package com.danil.etl.entity;
+package com.danil.etl.collector;
+
+import com.danil.etl.entity.Flight;
 
 import java.util.Objects;
 

@@ -6,5 +6,3 @@
     > psql -d aenaflight -U postgres -f DB_migration/migration.sql
 2)Run application:
     > java -jar ETL-2.0.jar
-
-Note: You can modify pool settings and max amount of records being processed by single step/task

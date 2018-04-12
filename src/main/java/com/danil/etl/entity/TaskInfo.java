@@ -20,6 +20,12 @@ public class TaskInfo {
     private TransformTaskStatus taskStage;
     @Column(name = "service_information")
     private String serviceInformation;
+    @Column(name = "total_handled_records")
+    private Long totalHandledRecords;
+    @Column(name = "chunk_size")
+    private int chunkSize;
+    @Column(name = "iteration")
+    private int iteration;
 
     public Long getId() {
         return id;
@@ -67,5 +73,29 @@ public class TaskInfo {
 
     public void setServiceInformation(String serviceInformation) {
         this.serviceInformation = serviceInformation;
+    }
+
+    public Long getTotalHandledRecords() {
+        return totalHandledRecords;
+    }
+
+    public void setTotalHandledRecords(Long totalHandledRecords) {
+        this.totalHandledRecords = totalHandledRecords;
+    }
+
+    public int getChunkSize() {
+        return chunkSize;
+    }
+
+    public void setChunkSize(int chunkSize) {
+        this.chunkSize = chunkSize;
+    }
+
+    public int getIteration() {
+        return iteration;
+    }
+
+    public void setIteration(int iteration) {
+        this.iteration = iteration;
     }
 }

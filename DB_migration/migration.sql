@@ -8,7 +8,10 @@ CREATE TABLE task_info
   end_index bigint not null,
   task_type character varying(20) not null,
   task_status character varying(20) not null,
-  service_information text
+  service_information text,
+  total_handled_records bigint not null,
+  chunk_size int not null,
+  iteration int not null
 );
 
 CREATE TABLE aenaflight_source
@@ -21,8 +24,8 @@ CREATE TABLE aenaflight_source
   carrier_code character varying(8),
   carrier_number character varying(8),
   status_info character varying(256) NOT NULL,
-  schd_dep_lt timestamp without time zone NOT NULL,
-  schd_arr_lt timestamp without time zone NOT NULL,
+  schd_dep_lt timestamp without time zone,
+  schd_arr_lt timestamp without time zone,
   est_dep_lt timestamp without time zone,
   est_arr_lt timestamp without time zone,
   act_dep_lt timestamp without time zone,
