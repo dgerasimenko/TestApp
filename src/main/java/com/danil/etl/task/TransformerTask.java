@@ -100,7 +100,9 @@ public class TransformerTask implements Runnable {
             final long endTime = System.currentTimeMillis();
             final long totalTimeInMilis = endTime - startTime;
             this.taskTime.set(totalTimeInMilis);
-            this.taskInfoDao.deleteById(taskInfo.getId());
+            if (taskInfo.getId() != null) {
+                this.taskInfoDao.deleteById(taskInfo.getId());
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }

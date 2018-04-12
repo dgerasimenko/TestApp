@@ -42,7 +42,6 @@ public class TransformerSheduler extends AbstractScheduler {
     public int transform() {
         System.out.println("Transformation. Started");
         final AtomicBoolean needMoreIterations = new AtomicBoolean();
-        int iteration = 0;
         int exitCode = 0;
         int tmpChunkSize = this.chunkSize;
         long totalRecordsSize = flightDao.getApproximatedRowsCount();
@@ -50,7 +49,8 @@ public class TransformerSheduler extends AbstractScheduler {
             final TaskServiceInfoHolder taskServiceInfoHolder = new TaskServiceInfoHolder(tmpChunkSize, 0);
             needMoreIterations.set(true);
             while (needMoreIterations.get()) {
-                iteration++;
+                final int iteration = taskServiceInfoHolder.getIteration();
+                taskServiceInfoHolder.setIteration(iteration + 1);
                 needMoreIterations.set(false);
 
                 exitCode = execute(needMoreIterations, iteration, taskServiceInfoHolder);
@@ -110,7 +110,7 @@ public class TransformerSheduler extends AbstractScheduler {
                         lastTaskInfo.getTotalHandledRecords(), lastTaskInfo.getIteration()));
 
                 serviceInfoHolder.setPrevRecordId(lastTaskInfo.getEndIndex());
-                serviceInfoHolder.setIteration(defaultIteration);
+                serviceInfoHolder.setIteration(lastTaskInfo.getIteration());
                 serviceInfoHolder.setTotalHandledRecords(lastTaskInfo.getTotalHandledRecords());
             }
         } else {
@@ -122,7 +122,7 @@ public class TransformerSheduler extends AbstractScheduler {
             }
             final TaskInfo lastTaskInfo = taskInfos.get(taskInfos.size() - 1);
             serviceInfoHolder.setPrevRecordId(lastTaskInfo.getEndIndex());
-            serviceInfoHolder.setIteration(defaultIteration);
+            serviceInfoHolder.setIteration(lastTaskInfo.getIteration());
             serviceInfoHolder.setTotalHandledRecords(lastTaskInfo.getTotalHandledRecords());
         }
     }
