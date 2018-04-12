@@ -63,7 +63,8 @@ public abstract class AbstractScheduler {
             while (tmpChunkSize > 0) {
 
                 Long startIndex = chunk.get(tmpChunkSize - 1).getId();
-                final Runnable task = getTask(this.flightDao, this.taskInfoDao, chunk, null, this.taskTime, needMoreIterations, totalHandledRecords, iteration);
+                final Runnable task = getTask(this.flightDao, this.taskInfoDao, chunk, null, this.taskTime,
+                        needMoreIterations, totalHandledRecords, serviceInfoHolder.getIteration());
                 executor.submit(task);
                 chunk = flightDao.getNextChunk(startIndex, serviceInfoHolder.getChunkSize());
                 tmpChunkSize = chunk.size();
