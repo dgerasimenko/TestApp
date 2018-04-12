@@ -52,6 +52,7 @@ public class TransformerSheduler extends AbstractScheduler {
                 final int iteration = taskServiceInfoHolder.getIteration();
                 taskServiceInfoHolder.setIteration(iteration + 1);
                 taskServiceInfoHolder.setTotalHandledRecords(0l);
+                taskServiceInfoHolder.setPrevRecordId(0l);
                 needMoreIterations.set(false);
 
                 exitCode = execute(needMoreIterations, iteration, taskServiceInfoHolder);
