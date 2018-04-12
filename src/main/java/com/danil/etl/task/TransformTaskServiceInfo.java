@@ -1,21 +1,19 @@
 package com.danil.etl.task;
 
 import com.danil.etl.entity.Flight;
-import com.danil.etl.entity.FlightUniqueKey;
 
 import java.util.List;
-import java.util.Map;
 
-public class TaskServiceInfo {
-    private final Map<FlightUniqueKey, Flight> mergedRecords;
+public class TransformTaskServiceInfo {
+    private final List<Flight> mergedRecords;
     private final List<Long> recordIdsToBeDeleted;
 
-    public TaskServiceInfo(Map<FlightUniqueKey, Flight> mergedRecords, List<Long> recordIdsToBeDeleted) {
+    public TransformTaskServiceInfo(List<Flight> mergedRecords, List<Long> recordIdsToBeDeleted) {
         this.mergedRecords = mergedRecords;
         this.recordIdsToBeDeleted = recordIdsToBeDeleted;
     }
 
-    public Map<FlightUniqueKey, Flight> getMergedRecords() {
+    public List<Flight> getMergedRecords() {
         return mergedRecords;
     }
 

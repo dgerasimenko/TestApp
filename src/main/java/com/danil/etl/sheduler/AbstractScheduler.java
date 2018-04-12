@@ -5,9 +5,9 @@ import com.danil.etl.dao.FlightDao;
 import com.danil.etl.dao.TaskInfoDao;
 import com.danil.etl.entity.Flight;
 import com.danil.etl.entity.TaskInfo;
+import com.danil.etl.task.TaskServiceInfoHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -30,58 +30,73 @@ public abstract class AbstractScheduler {
     @Value("${task.queue.size}")
     protected int taskQueueSize;
 
-    @Value("${chunk.size}")
-    protected int chunkSize;
+    public abstract int transform();
 
-    protected long totalRecordsSize;
-
-    public abstract void schedule();
-
-    public abstract Long resumeTasks(ExecutorService executor, AtomicBoolean needMoreIterations);
+    public abstract void resumeTasks(ExecutorService executor, TaskServiceInfoHolder serviceInfoHolder,
+                                     AtomicBoolean needMoreIterations, int defaultIteration);
     public abstract Runnable getTask(AbstractObjectDao destinationDataDao, TaskInfoDao taskInfoDao,
-                                     List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime, AtomicBoolean needMoreIterations);
+                                     List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime,
+                                     AtomicBoolean needMoreIterations, long totalHandledRecords, int iteration);
     public abstract Class getTaskType();
 
-    public void execute(AtomicBoolean needMoreIterations, int iteration) {
-        totalRecordsSize = flightDao.getApproximatedRowsCount();
+    protected int execute(AtomicBoolean needMoreIterations, int iteration, TaskServiceInfoHolder serviceInfoHolder) {
+        int exitCode = 0;
+
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(this.taskQueueSize);
         final ExecutorService executor = new ThreadPoolExecutor(1, this.poolSize, 0L, TimeUnit.MILLISECONDS, queue);
 
-        final Long prevRecordId = resumeTasks(executor, needMoreIterations);
+        resumeTasks(executor, serviceInfoHolder, needMoreIterations, iteration);
+        iteration = serviceInfoHolder.getIteration();
+        long totalHandledRecords = serviceInfoHolder.getTotalHandledRecords();
+        long totalRecordsSize = totalHandledRecords != 0 ? totalHandledRecords - totalHandledRecords : flightDao.getApproximatedRowsCount();
+
+        final long startIterationTime = System.currentTimeMillis();
         try {
-            List<Flight> chunk = this.flightDao.getNextChunk(prevRecordId, chunkSize);
+            List<Flight> chunk = this.flightDao.getNextChunk(serviceInfoHolder.getPrevRecordId(), serviceInfoHolder.getChunkSize());
             int tmpChunkSize = chunk.size();
-            String progressAnimation = "|/-\\";
             int animationCounter = 0;
+            String animation = "";
 
             while (tmpChunkSize > 0) {
+
                 Long startIndex = chunk.get(tmpChunkSize - 1).getId();
-                final Runnable task = getTask(this.flightDao, this.taskInfoDao, chunk, null, this.taskTime, needMoreIterations);
+                final Runnable task = getTask(this.flightDao, this.taskInfoDao, chunk, null, this.taskTime, needMoreIterations, totalHandledRecords, iteration);
                 executor.submit(task);
-                chunk = flightDao.getNextChunk(startIndex, this.chunkSize);
+
+                chunk = flightDao.getNextChunk(startIndex, serviceInfoHolder.getChunkSize());
                 tmpChunkSize = chunk.size();
+                totalHandledRecords +=tmpChunkSize;
 
                 while (queue.size() == this.taskQueueSize) {
                     Thread.sleep(this.taskTime.longValue());
                 }
                 if (tmpChunkSize > 0) {
-                    this.totalRecordsSize -= tmpChunkSize;
-                    final long chunkAmount = this.totalRecordsSize / chunkSize;
-                    long timeEstimation = chunkAmount * this.taskTime.get();
+                    totalRecordsSize -= tmpChunkSize;
+                    final long chunkAmount = totalRecordsSize / serviceInfoHolder.getChunkSize();
+                    long timeEstimation = chunkAmount * this.taskTime.longValue();
 
-                    final String estimationMessage = String.format("Iteration %d. Time to finish %s: %02d h %02d min.",
+                    final String estimationMessage = String.format("%s %d. Remaining: %02d h %02d min %02d sec.",
+                            getTaskType().getSimpleName(),
                             iteration,
-                            task.getClass().getSimpleName(),
                             TimeUnit.MILLISECONDS.toHours(timeEstimation),
-                            TimeUnit.MILLISECONDS.toMinutes(timeEstimation) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeEstimation)));
+                            TimeUnit.MILLISECONDS.toMinutes(timeEstimation) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeEstimation)),
+                            TimeUnit.MILLISECONDS.toSeconds(timeEstimation) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeEstimation)));
 
-                    System.out.print("\r" + estimationMessage + "..." + progressAnimation.charAt(animationCounter % progressAnimation.length()) + " ");
+                    System.out.print("\r" + estimationMessage + animation +  "Avg task time: " + this.taskTime.longValue() + "                 ");
+                    animation +=".";
                     animationCounter++;
+                    if (animationCounter > 4) {
+                        animationCounter = 0;
+                        animation = "";
+                    }
                 }
             }
-
         } catch (InterruptedException ex) {
-            System.out.println("Someone tries to stop me => " + ex.getMessage());
+                System.out.println("Someone tries to stop me => " + ex.getMessage());
+        } catch (Exception ex) {
+            System.out.println("Exceprion happened in iteration:");
+            exitCode = -1;
+            ex.printStackTrace();
         } finally {
             executor.shutdown();
         }
@@ -91,9 +106,21 @@ public abstract class AbstractScheduler {
         } catch (InterruptedException ex) {
             System.out.println("Await termination Interrupted => " + ex.getMessage());
             executor.shutdownNow();
+            exitCode = -1;
         }
+        final long totalIterationTime = System.currentTimeMillis() - startIterationTime;
+
+        final String finishIterationMessage = String.format("%s %d. Total iteration time: %02d h %02d min %02d sec.",
+                getTaskType().getSimpleName(),
+                iteration,
+                TimeUnit.MILLISECONDS.toHours(totalIterationTime),
+                TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
+                TimeUnit.MILLISECONDS.toSeconds(totalIterationTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalIterationTime)));
+        System.out.println("\r" + finishIterationMessage);
         if (!done) {
             System.out.println("\nApplication stopped by timeout. Some tasks stay inProgress. Exit.");
+            exitCode = 1;
         }
+        return exitCode;
     }
 }

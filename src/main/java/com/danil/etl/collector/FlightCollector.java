@@ -1,8 +1,7 @@
 package com.danil.etl.collector;
 
 import com.danil.etl.entity.Flight;
-import com.danil.etl.entity.FlightUniqueKey;
-import com.danil.etl.task.TaskServiceInfo;
+import com.danil.etl.task.TransformTaskServiceInfo;
 import com.danil.etl.utils.Stack;
 import org.apache.commons.lang.StringUtils;
 
@@ -14,25 +13,34 @@ import java.util.Map;
 public class FlightCollector {
     private static final char SEPARATOR = ',';
 
-    public TaskServiceInfo orderBy(List<Flight> flights) {
+    public TransformTaskServiceInfo aggregate(List<Flight> flights) {
 
-        final Map<FlightUniqueKey, Flight> sourceData2oneRecord = new HashMap<>();
+        final Map<FlightUniqueKey, FlightInfoContainer> sourceData2oneRecord = new HashMap<>();
         final List<Long> idsToBeDeleted = new ArrayList<>(flights.size() / 2);
         for (Flight tmpFlight : flights) {
             final FlightUniqueKey key = new FlightUniqueKey(tmpFlight);
-            final Flight flight = sourceData2oneRecord.get(key);
+            FlightInfoContainer container = sourceData2oneRecord.get(key);
 
-            if (flight == null) {
-                sourceData2oneRecord.put(key, tmpFlight);
+            if (container == null) {
+                container = new FlightInfoContainer(tmpFlight, 0l);
+                sourceData2oneRecord.put(key, container);
             } else {
                 idsToBeDeleted.add(tmpFlight.getId());
-                mergeFlight(tmpFlight, flight);
+                container.incrementDuplicates(1l);
+                mergeFlight(tmpFlight, container.getFlight());
             }
 
         }
-        return new TaskServiceInfo(sourceData2oneRecord, idsToBeDeleted);
-    }
+        final List<Flight> mergedFlight = new ArrayList<>();
+        for (Map.Entry<FlightUniqueKey, FlightInfoContainer> entry : sourceData2oneRecord.entrySet()) {
+            final FlightInfoContainer container = entry.getValue();
+            if (container.getDuplicates() > 0) {
+                mergedFlight.add(container.getFlight());
+            }
+        }
 
+        return new TransformTaskServiceInfo(mergedFlight, idsToBeDeleted);
+    }
 
     private void mergeFlight(Flight src, Flight res) {
 

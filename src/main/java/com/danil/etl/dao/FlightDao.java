@@ -2,20 +2,15 @@ package com.danil.etl.dao;
 
 import com.danil.etl.entity.Flight;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.Query;
-import java.util.Arrays;
 import java.util.List;
 
 @Repository
 @Transactional
 public class FlightDao extends AbstractObjectDao<Flight> {
-
-    @Value("${default.initial.capacity}")
-    private Long defaultInitialCapacity;
 
     public void deleteByIds(List<Long> id) {
         super.deleteByIds(Flight.class, id);
@@ -31,16 +26,11 @@ public class FlightDao extends AbstractObjectDao<Flight> {
     }
 
     public Long getApproximatedRowsCount() {
-        Long count;
-        try {
-            final Query hql = entityManager
-                    .createNativeQuery("SELECT n_live_tup " +
-                            "FROM pg_stat_user_tables " +
-                            "WHERE relname='aenaflight_2017_01'");
-            count = Long.valueOf(hql.getSingleResult().toString());
-        } catch (Exception ex) {
-            count = defaultInitialCapacity;
-        }
+        final Query hql = entityManager
+                .createNativeQuery("SELECT n_live_tup " +
+                        "FROM pg_stat_user_tables " +
+                        "WHERE relname='aenaflight_2017_01'");
+        final Long count = Long.valueOf(hql.getSingleResult().toString());
         return count;
     }
 

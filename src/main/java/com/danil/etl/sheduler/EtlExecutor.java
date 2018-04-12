@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 
 
 @Component
-public class Scheduler {
+public class EtlExecutor {
 
 @Autowired
 private TransformerSheduler transformerSheduler;
@@ -20,8 +20,10 @@ private LoadScheduler loadScheduler;
         System.out.println("Starting...");
         final long startTime = System.currentTimeMillis();
 
-        transformerSheduler.schedule();
-        loadScheduler.schedule();
+        int exitCode = transformerSheduler.transform();
+        if (exitCode == 0) {
+            loadScheduler.transform();
+        }
 
         final long endTime = System.currentTimeMillis();
         final long totalTimeInMilis = endTime - startTime;

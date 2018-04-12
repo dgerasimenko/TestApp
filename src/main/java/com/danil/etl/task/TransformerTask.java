@@ -1,6 +1,6 @@
 package com.danil.etl.task;
 
-import com.danil.etl.ChunkTransformNotNeededException;
+import com.danil.etl.exception.ChunkTransformNotNeededException;
 import com.danil.etl.dao.FlightDao;
 import com.danil.etl.dao.TaskInfoDao;
 import com.danil.etl.entity.*;
@@ -19,17 +19,19 @@ import java.util.stream.Collectors;
 
 public class TransformerTask implements Runnable {
     private static final char SEPARATOR = ',';
+
     private FlightDao flightDao;
     private final TaskInfoDao taskInfoDao;
     private final List<Flight> chunk;
     private final AtomicLong taskTime;
     private final AtomicBoolean needMoreIterations;
-
     private TaskInfo taskInfo;
-    private TaskServiceInfo serviceInfo;
+    private TransformTaskServiceInfo serviceInfo;
     private Map<TransformTaskStatus, ITaskStageProcessor> TASK_STAGE_2_PROCESSOR = new HashMap<>();
 
-    public TransformerTask(FlightDao flightDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime, AtomicBoolean needMoreIterations) {
+    public TransformerTask(FlightDao flightDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun,
+                           AtomicLong taskTime, AtomicBoolean needMoreIterations, int scheduledChunkSize, long totalHandledRecords,
+                           int iteration) {
         this.flightDao = flightDao;
         this.taskInfoDao = taskInfoDao;
         this.chunk = chunk;
@@ -43,6 +45,9 @@ public class TransformerTask implements Runnable {
             newTaskInfo.setStartIndex(chunk.get(0).getId());
             newTaskInfo.setEndIndex(chunk.get(chunk.size() - 1).getId());
             newTaskInfo.setTaskType(this.getClass().getSimpleName());
+            newTaskInfo.setChunkSize(scheduledChunkSize);
+            newTaskInfo.setTotalHandledRecords(totalHandledRecords + chunk.size());
+            newTaskInfo.setIteration(iteration);
             this.taskInfo = newTaskInfo;
         }
         initTaskStrageProcessors();
@@ -53,7 +58,7 @@ public class TransformerTask implements Runnable {
         TASK_STAGE_2_PROCESSOR.put(TransformTaskStatus.TRANSFORM,
                 () -> {
                     final FlightCollector collector = new FlightCollector();
-                    serviceInfo = collector.orderBy(chunk);
+                    serviceInfo = collector.aggregate(chunk);
                     if (CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted())) {
                         throw new ChunkTransformNotNeededException();
                     } else {
@@ -63,7 +68,7 @@ public class TransformerTask implements Runnable {
                 });
         TASK_STAGE_2_PROCESSOR.put(TransformTaskStatus.INSERT_ONE_RECORD,
                 () -> {
-                    flightDao.mergeAll(serviceInfo.getMergedRecords().values());
+                    flightDao.mergeAll(serviceInfo.getMergedRecords());
                     taskInfo.setServiceInformation(StringUtils.join(serviceInfo.getRecordIdsToBeDeleted(), SEPARATOR));
                     changeTaskStatus(TransformTaskStatus.INSERT_ONE_RECORD);
                 });
@@ -95,6 +100,7 @@ public class TransformerTask implements Runnable {
             final long endTime = System.currentTimeMillis();
             final long totalTimeInMilis = endTime - startTime;
             this.taskTime.set(totalTimeInMilis);
+            this.taskInfoDao.deleteById(taskInfo.getId());
         } catch (Exception ex) {
             ex.printStackTrace();
         }

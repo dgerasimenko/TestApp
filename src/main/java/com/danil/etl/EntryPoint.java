@@ -1,6 +1,6 @@
 package com.danil.etl;
 
-import com.danil.etl.sheduler.Scheduler;
+import com.danil.etl.sheduler.EtlExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.Banner;
 import org.springframework.boot.CommandLineRunner;
@@ -9,11 +9,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
-@PropertySource("file:app_config.properties")
 public class EntryPoint implements CommandLineRunner {
 
     @Autowired
-    private Scheduler scheduler;
+    private EtlExecutor etlExecutor;
 
     public static void main(String[] args) throws Exception {
         try {
@@ -29,7 +28,7 @@ public class EntryPoint implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        scheduler.doJob();
+        etlExecutor.doJob();
     }
 }
 

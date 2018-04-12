@@ -8,6 +8,7 @@ import com.danil.etl.entity.Flight;
 import com.danil.etl.entity.TaskInfo;
 import com.danil.etl.entity.TransformTaskStatus;
 import org.springframework.util.CollectionUtils;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -19,12 +20,14 @@ public class LoaderTask implements Runnable {
     private final AbstractObjectDao destinationDataDao;
     private TaskInfo taskInfo;
 
-    public LoaderTask(AbstractObjectDao destinationDataDao, TaskInfoDao taskInfoDao, List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime) {
-
+    public LoaderTask(AbstractObjectDao destinationDataDao, TaskInfoDao taskInfoDao,
+                      List<Flight> chunk, TaskInfo taskInfoPrevRun, AtomicLong taskTime, int scheduledChunkSize,
+                      long totalHandledRecords, int iteration) {
         this.taskInfoDao = taskInfoDao;
         this.chunk = chunk;
         this.taskTime = taskTime;
         this.destinationDataDao = destinationDataDao;
+
         if (taskInfoPrevRun != null) {
             this.taskInfo = taskInfoPrevRun;
         } else {
@@ -33,6 +36,9 @@ public class LoaderTask implements Runnable {
             newTaskInfo.setStartIndex(chunk.get(0).getId());
             newTaskInfo.setEndIndex(chunk.get(chunk.size() - 1).getId());
             newTaskInfo.setTaskType(this.getClass().getSimpleName());
+            newTaskInfo.setChunkSize(scheduledChunkSize);
+            newTaskInfo.setTotalHandledRecords(totalHandledRecords + chunk.size());
+            newTaskInfo.setIteration(iteration);
             this.taskInfo = newTaskInfo;
         }
     }
@@ -59,6 +65,6 @@ public class LoaderTask implements Runnable {
 
     private void changeTaskStatus(TransformTaskStatus taskStage) {
         this.taskInfo.setTaskStage(taskStage);
-        this.taskInfo = taskInfoDao.merge(this.taskInfo);
+        taskInfoDao.persist(this.taskInfo);
     }
 }
