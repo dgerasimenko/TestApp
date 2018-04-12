@@ -45,11 +45,7 @@ public class LoadScheduler extends AbstractScheduler {
     public void resumeTasks(ExecutorService executor, TaskServiceInfoHolder serviceInfoHolder, AtomicBoolean needMoreIterations, int defaultIteration) {
 
         final List<TaskInfo> taskInfos = taskInfoDao.getTaskInfo(getTaskType());
-        if (CollectionUtils.isEmpty(taskInfos)) {
-            serviceInfoHolder.setPrevRecordId(0l);
-            serviceInfoHolder.setIteration(defaultIteration);
-            serviceInfoHolder.setTotalHandledRecords(0l);
-        } else {
+        if (!CollectionUtils.isEmpty(taskInfos)) {
             System.out.println(WARN_MESSAGE);
             final TaskInfo lastTaskInfo = taskInfos.get(taskInfos.size() - 1);
             final List<Flight> chunk = flightDao.getNextChunk(lastTaskInfo.getEndIndex(), this.chunkSize);
