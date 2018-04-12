@@ -64,6 +64,12 @@ public abstract class AbstractObjectDao<O> {
         query.executeUpdate();
     }
 
+    protected void deleteAll(Class<O> clazz, List<O> objects) {
+        for (O o : objects) {
+            entityManager.remove(o);
+        }
+    }
+
     public void delete(O obj) {
         entityManager.remove(obj);
     }

@@ -2,7 +2,6 @@ package com.danil.etl.dao;
 
 import com.danil.etl.entity.TaskInfo;
 import com.danil.etl.entity.TransformTaskStatus;
-import com.danil.etl.task.LoaderTask;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -93,7 +93,7 @@ public class TransformerSheduler extends AbstractScheduler {
 
     @Override
     public void resumeTasks(ExecutorService executor, TaskServiceInfoHolder serviceInfoHolder, AtomicBoolean needMoreIterations, int defaultIteration) {
-        List<TaskInfo> taskInfos = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.TRANSFORM));
+        List<TaskInfo> taskInfos = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.TRANSFORM, TransformTaskStatus.INSERT_ONE_RECORD));
         if (CollectionUtils.isEmpty(taskInfos)) {
             taskInfos = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.DELETE_DUPLICATES));
             if (CollectionUtils.isEmpty(taskInfos)) {
@@ -118,7 +118,7 @@ public class TransformerSheduler extends AbstractScheduler {
             for (TaskInfo taskInfo : taskInfos) {
                 final List<Flight> chunk = flightDao.getNextChunk(taskInfo.getStartIndex(), chunkSize);
                     taskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
-                executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations, taskInfo.getTotalHandledRecords(), taskInfo.getIteration()));
+               executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations, taskInfo.getTotalHandledRecords(), taskInfo.getIteration()));
             }
             final TaskInfo lastTaskInfo = taskInfos.get(taskInfos.size() - 1);
             serviceInfoHolder.setPrevRecordId(lastTaskInfo.getEndIndex());

@@ -6,7 +6,6 @@ import com.danil.etl.dao.TaskInfoDao;
 import com.danil.etl.entity.*;
 import com.danil.etl.collector.FlightCollector;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
 import java.util.Arrays;
@@ -59,7 +58,7 @@ public class TransformerTask implements Runnable {
         TASK_STAGE_2_PROCESSOR.put(TransformTaskStatus.TRANSFORM,
                 () -> {
                     final FlightCollector collector = new FlightCollector();
-                    serviceInfo = collector.orderBy(chunk);
+                    serviceInfo = collector.aggregate(chunk);
                     if (CollectionUtils.isEmpty(serviceInfo.getRecordIdsToBeDeleted())) {
                         throw new ChunkTransformNotNeededException();
                     } else {
@@ -101,6 +100,7 @@ public class TransformerTask implements Runnable {
             final long endTime = System.currentTimeMillis();
             final long totalTimeInMilis = endTime - startTime;
             this.taskTime.set(totalTimeInMilis);
+            this.taskInfoDao.deleteById(taskInfo.getId());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -108,7 +108,7 @@ public class TransformerTask implements Runnable {
 
     private void changeTaskStatus(TransformTaskStatus taskStage) {
         this.taskInfo.setTaskStage(taskStage);
-        taskInfoDao.merge(this.taskInfo);
+        this.taskInfo = taskInfoDao.merge(this.taskInfo);
     }
 
     private interface ITaskStageProcessor {

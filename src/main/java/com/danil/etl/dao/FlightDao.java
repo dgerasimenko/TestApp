@@ -2,12 +2,10 @@ package com.danil.etl.dao;
 
 import com.danil.etl.entity.Flight;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.Query;
-import java.util.Arrays;
 import java.util.List;
 
 @Repository

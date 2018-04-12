@@ -13,7 +13,7 @@ import java.util.Map;
 public class FlightCollector {
     private static final char SEPARATOR = ',';
 
-    public TransformTaskServiceInfo orderBy(List<Flight> flights) {
+    public TransformTaskServiceInfo aggregate(List<Flight> flights) {
 
         final Map<FlightUniqueKey, FlightInfoContainer> sourceData2oneRecord = new HashMap<>();
         final List<Long> idsToBeDeleted = new ArrayList<>(flights.size() / 2);
