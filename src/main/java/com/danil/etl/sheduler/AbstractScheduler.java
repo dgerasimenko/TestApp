@@ -49,7 +49,6 @@ public abstract class AbstractScheduler {
         final ExecutorService executor = new ThreadPoolExecutor(1, this.poolSize, 0L, TimeUnit.MILLISECONDS, queue);
 
         resumeTasks(executor, serviceInfoHolder, needMoreIterations, iteration);
-        iteration = serviceInfoHolder.getIteration();
         long totalHandledRecords = serviceInfoHolder.getTotalHandledRecords();
         long approximatedRecordsAmount = flightDao.getApproximatedRowsCount();
         long remainingRecordsSize = totalHandledRecords != 0 ? approximatedRecordsAmount - totalHandledRecords : approximatedRecordsAmount;
@@ -85,7 +84,7 @@ public abstract class AbstractScheduler {
                             TimeUnit.MILLISECONDS.toMinutes(timeEstimation) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeEstimation)),
                             TimeUnit.MILLISECONDS.toSeconds(timeEstimation) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeEstimation)));
 
-                    System.out.print("\r" + estimationMessage + animation + "    ");
+                    System.out.print("\r" + estimationMessage + animation);
                     animation += ".";
                     animationCounter++;
                     if (animationCounter > 4) {
@@ -115,7 +114,7 @@ public abstract class AbstractScheduler {
 
         final String finishIterationMessage = String.format("%s %d. Total iteration time: %02d h %02d min %02d sec.",
                 getTaskType().getSimpleName(),
-                iteration,
+                serviceInfoHolder.getIteration(),
                 TimeUnit.MILLISECONDS.toHours(totalIterationTime),
                 TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
                 TimeUnit.MILLISECONDS.toSeconds(totalIterationTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalIterationTime)));

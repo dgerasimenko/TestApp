@@ -6,9 +6,11 @@ public class TaskServiceInfoHolder {
     private Long totalHandledRecords;
     private int iteration;
 
-    public TaskServiceInfoHolder(int chunkSize, long prevRecordId) {
+    public TaskServiceInfoHolder(int chunkSize, long prevRecordId, Long totalHandledRecords, int iteration) {
         this.chunkSize = chunkSize;
         this.prevRecordId = prevRecordId;
+        this.totalHandledRecords = totalHandledRecords;
+        this.iteration = iteration;
     }
 
     public int getChunkSize() {

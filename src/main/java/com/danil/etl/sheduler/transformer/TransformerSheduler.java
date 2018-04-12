@@ -46,7 +46,7 @@ public class TransformerSheduler extends AbstractScheduler {
         int tmpChunkSize = this.chunkSize;
         long totalRecordsSize = flightDao.getApproximatedRowsCount();
         while(notAllRecordsTransformed(tmpChunkSize / 2, totalRecordsSize)) {
-            final TaskServiceInfoHolder taskServiceInfoHolder = new TaskServiceInfoHolder(tmpChunkSize, 0);
+            final TaskServiceInfoHolder taskServiceInfoHolder = new TaskServiceInfoHolder(tmpChunkSize, 0l, 0l, 0);
             needMoreIterations.set(true);
             while (needMoreIterations.get()) {
                 final int iteration = taskServiceInfoHolder.getIteration();
@@ -96,11 +96,7 @@ public class TransformerSheduler extends AbstractScheduler {
         List<TaskInfo> taskInfos = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.TRANSFORM, TransformTaskStatus.INSERT_ONE_RECORD));
         if (CollectionUtils.isEmpty(taskInfos)) {
             taskInfos = taskInfoDao.getTaskInfoByStatus(getTaskType(), Arrays.asList(TransformTaskStatus.DELETE_DUPLICATES));
-            if (CollectionUtils.isEmpty(taskInfos)) {
-                serviceInfoHolder.setPrevRecordId(0l);
-                serviceInfoHolder.setIteration(defaultIteration);
-                serviceInfoHolder.setTotalHandledRecords(0l);
-            } else {
+            if (!CollectionUtils.isEmpty(taskInfos)){
                 System.out.println(WARN_MESSAGE);
 
                 final TaskInfo lastTaskInfo = taskInfos.get(taskInfos.size() - 1);

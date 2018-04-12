@@ -31,7 +31,7 @@ public class LoadScheduler extends AbstractScheduler {
     @Override
     public int transform() {
         System.out.println("Loading. Started");
-        int exitCode = execute(null, 1, new TaskServiceInfoHolder(chunkSize, 0l));
+        int exitCode = execute(null, 1, new TaskServiceInfoHolder(chunkSize, 0l, 0l, 0));
         if (exitCode == 0) {
             taskInfoDao.deleteAll();
             System.out.println("Loading. Done");
