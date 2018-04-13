@@ -48,7 +48,6 @@ public class TransformerSheduler extends AbstractScheduler {
         while(notAllRecordsTransformed(tmpChunkSize / 2, totalRecordsSize)) {
             final TaskServiceInfoHolder taskServiceInfoHolder = new TaskServiceInfoHolder(tmpChunkSize, 0l, 0l, 0);
             needMoreIterations.set(true);
-            System.out.println("Chunk size = " + tmpChunkSize);
             while (needMoreIterations.get()) {
                 final int iteration = taskServiceInfoHolder.getIteration();
                 taskServiceInfoHolder.setIteration(iteration + 1);

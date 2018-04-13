@@ -47,8 +47,8 @@ public abstract class AbstractScheduler {
 
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(this.taskQueueSize);
         final ExecutorService executor = new ThreadPoolExecutor(1, this.poolSize, 0L, TimeUnit.MILLISECONDS, queue);
-
         resumeTasks(executor, serviceInfoHolder, needMoreIterations, iteration);
+        System.out.println("Chunk size = " + serviceInfoHolder.getChunkSize());
         long totalHandledRecords = serviceInfoHolder.getTotalHandledRecords();
         long approximatedRecordsAmount = flightDao.getApproximatedRowsCount();
         long remainingRecordsSize = totalHandledRecords != 0 ? approximatedRecordsAmount - totalHandledRecords : approximatedRecordsAmount;
