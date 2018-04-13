@@ -46,8 +46,11 @@ public class TransformerSheduler extends AbstractScheduler {
         int tmpChunkSize = this.chunkSize;
         long totalRecordsSize = flightDao.getApproximatedRowsCount();
         while(notAllRecordsTransformed(tmpChunkSize / 2, totalRecordsSize)) {
+            final long startTime = System.currentTimeMillis();
             final TaskServiceInfoHolder taskServiceInfoHolder = new TaskServiceInfoHolder(tmpChunkSize, 0l, 0l, 0);
             needMoreIterations.set(true);
+            final String initial = tmpChunkSize == this.chunkSize ? "Initial " : "New ";
+            System.out.println(initial + CHUNK_SIZE_MESSAGE + tmpChunkSize);
             while (needMoreIterations.get()) {
                 final int iteration = taskServiceInfoHolder.getIteration();
                 taskServiceInfoHolder.setIteration(iteration + 1);
@@ -66,6 +69,14 @@ public class TransformerSheduler extends AbstractScheduler {
             if (exitCode != 0) {
                 break;
             }
+            final long totalIterationTime = System.currentTimeMillis() - startTime;
+            final String finishIterationMessage = String.format("Total time for %d %s iterations: %02d h %02d min. chunk.size: %d",
+                    taskServiceInfoHolder.getIteration(),
+                    getTaskType().getSimpleName(),
+                    TimeUnit.MILLISECONDS.toHours(totalIterationTime),
+                    TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
+                    taskServiceInfoHolder.getChunkSize());
+            System.out.println("\r" + finishIterationMessage);
             tmpChunkSize = taskServiceInfoHolder.getChunkSize() * 2;
         }
         if (exitCode == 0) {
@@ -106,10 +117,12 @@ public class TransformerSheduler extends AbstractScheduler {
 
                 executor.submit(getTask(flightDao, taskInfoDao, chunk, null, taskTime, needMoreIterations,
                         lastTaskInfo.getTotalHandledRecords(), lastTaskInfo.getIteration()));
-
+                serviceInfoHolder.setChunkSize(lastTaskInfo.getChunkSize());
                 serviceInfoHolder.setPrevRecordId(lastTaskInfo.getEndIndex());
                 serviceInfoHolder.setIteration(lastTaskInfo.getIteration());
                 serviceInfoHolder.setTotalHandledRecords(lastTaskInfo.getTotalHandledRecords());
+
+                System.out.println(CHUNK_SIZE_MESSAGE + serviceInfoHolder.getChunkSize());
             }
         } else {
             System.out.println(WARN_MESSAGE);
@@ -118,10 +131,14 @@ public class TransformerSheduler extends AbstractScheduler {
                     taskInfo.setTaskStage(TransformTaskStatus.EXTRACT);
                executor.submit(getTask(flightDao, taskInfoDao, chunk, taskInfo, taskTime, needMoreIterations, taskInfo.getTotalHandledRecords(), taskInfo.getIteration()));
             }
+
             final TaskInfo lastTaskInfo = taskInfos.get(taskInfos.size() - 1);
+            serviceInfoHolder.setChunkSize(lastTaskInfo.getChunkSize());
             serviceInfoHolder.setPrevRecordId(lastTaskInfo.getEndIndex());
             serviceInfoHolder.setIteration(lastTaskInfo.getIteration());
             serviceInfoHolder.setTotalHandledRecords(lastTaskInfo.getTotalHandledRecords());
+
+            System.out.println(CHUNK_SIZE_MESSAGE + serviceInfoHolder.getChunkSize());
         }
     }
 }

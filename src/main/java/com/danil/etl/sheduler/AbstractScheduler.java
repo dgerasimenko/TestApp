@@ -19,6 +19,8 @@ public abstract class AbstractScheduler {
 
     protected final AtomicLong taskTime = new AtomicLong();
 
+    protected static final String CHUNK_SIZE_MESSAGE = "Chunk size = ";
+
     @Autowired
     protected FlightDao flightDao;
 
@@ -48,7 +50,6 @@ public abstract class AbstractScheduler {
         final BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(this.taskQueueSize);
         final ExecutorService executor = new ThreadPoolExecutor(1, this.poolSize, 0L, TimeUnit.MILLISECONDS, queue);
         resumeTasks(executor, serviceInfoHolder, needMoreIterations, iteration);
-        System.out.println("Chunk size = " + serviceInfoHolder.getChunkSize());
         long totalHandledRecords = serviceInfoHolder.getTotalHandledRecords();
         long approximatedRecordsAmount = flightDao.getApproximatedRowsCount();
         long remainingRecordsSize = totalHandledRecords != 0 ? approximatedRecordsAmount - totalHandledRecords : approximatedRecordsAmount;
@@ -111,15 +112,7 @@ public abstract class AbstractScheduler {
             executor.shutdownNow();
             exitCode = -1;
         }
-        final long totalIterationTime = System.currentTimeMillis() - startIterationTime;
 
-        final String finishIterationMessage = String.format("%s %d. Total iteration time: %02d h %02d min %02d sec.",
-                getTaskType().getSimpleName(),
-                serviceInfoHolder.getIteration(),
-                TimeUnit.MILLISECONDS.toHours(totalIterationTime),
-                TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
-                TimeUnit.MILLISECONDS.toSeconds(totalIterationTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalIterationTime)));
-        System.out.print("\r" + finishIterationMessage);
         if (!done) {
             System.out.println("\nApplication stopped by timeout. Some tasks stay inProgress. Exit.");
             exitCode = 1;

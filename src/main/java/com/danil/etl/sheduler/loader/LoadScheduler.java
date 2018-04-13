@@ -51,9 +51,12 @@ public class LoadScheduler extends AbstractScheduler {
             final List<Flight> chunk = flightDao.getNextChunk(lastTaskInfo.getEndIndex(), this.chunkSize);
             executor.submit(getTask(flightDao, taskInfoDao, chunk, null, taskTime, needMoreIterations,
                     lastTaskInfo.getTotalHandledRecords(), lastTaskInfo.getIteration()));
+            serviceInfoHolder.setChunkSize(lastTaskInfo.getChunkSize());
             serviceInfoHolder.setPrevRecordId(lastTaskInfo.getEndIndex());
             serviceInfoHolder.setIteration(lastTaskInfo.getIteration());
             serviceInfoHolder.setTotalHandledRecords(lastTaskInfo.getTotalHandledRecords());
+
+            System.out.println(CHUNK_SIZE_MESSAGE + serviceInfoHolder.getChunkSize());
         }
     }
 
