@@ -45,7 +45,7 @@ public class TransformerSheduler extends AbstractScheduler {
         int exitCode = 0;
         int tmpChunkSize = this.chunkSize;
         long totalRecordsSize = flightDao.getApproximatedRowsCount();
-        while(notAllRecordsTransformed(tmpChunkSize / 2, totalRecordsSize)) {
+        while(notAllRecordsTransformed(tmpChunkSize  - this.chunkSize, totalRecordsSize)) {
             final long startTime = System.currentTimeMillis();
             final TaskServiceInfoHolder taskServiceInfoHolder = new TaskServiceInfoHolder(tmpChunkSize, 0l, 0l, 0);
             needMoreIterations.set(true);
@@ -79,7 +79,7 @@ public class TransformerSheduler extends AbstractScheduler {
             System.out.println("\r" + finishIterationMessage);
             totalRecordsSize = flightDao.getApproximatedRowsCount();
             System.out.println("Source table size: " + totalRecordsSize);
-            tmpChunkSize = taskServiceInfoHolder.getChunkSize() * 2;
+            tmpChunkSize = taskServiceInfoHolder.getChunkSize() + this.chunkSize;
         }
         if (exitCode == 0) {
             System.out.println("Transformation. Done");

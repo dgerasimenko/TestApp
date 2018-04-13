@@ -37,10 +37,11 @@ public class LoadScheduler extends AbstractScheduler {
         if (exitCode == 0) {
             taskInfoDao.deleteAll();
             final long totalIterationTime = System.currentTimeMillis() - startTime;
-            final String finishIterationMessage = String.format("Total time for %s: %02d h %02d min. chunk.size: %d",
+            final String finishIterationMessage = String.format("Total time for %s: %02d h %02d min %02d sec. chunk.size: %d",
                     getTaskType().getSimpleName(),
                     TimeUnit.MILLISECONDS.toHours(totalIterationTime),
                     TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
+                    TimeUnit.MILLISECONDS.toSeconds(totalIterationTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalIterationTime)),
                     this.chunkSize);
             System.out.println("\r" + finishIterationMessage);
             System.out.println("Loading. Done");
