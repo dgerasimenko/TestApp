@@ -5,4 +5,7 @@
  - run migration script from:
     > psql -d aenaflight -U postgres -f DB_migration/migration.sql
 2)Run application:
-    > java -jar ETL-2.0.jar
+    > java -Xmx2g -jar ETL-2.1.jar
+	
+Note: You can modify pool settings and max amount of records (chunk.size) being processed by single step/task 
+      Please be careful this would cause OutOfMemoryError.
