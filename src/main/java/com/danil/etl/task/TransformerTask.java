@@ -103,6 +103,7 @@ public class TransformerTask implements Runnable {
             if (taskInfo.getId() != null) {
                 this.taskInfoDao.deleteById(taskInfo.getId());
             }
+            System.gc();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
