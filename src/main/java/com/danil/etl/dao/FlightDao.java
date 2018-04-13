@@ -29,7 +29,7 @@ public class FlightDao extends AbstractObjectDao<Flight> {
         final Query hql = entityManager
                 .createNativeQuery("SELECT n_live_tup " +
                         "FROM pg_stat_user_tables " +
-                        "WHERE relname='aenaflight_2017_01'");
+                        "WHERE relname='aenaflight_2017_01';");
         final Long count = Long.valueOf(hql.getSingleResult().toString());
         return count;
     }

@@ -85,7 +85,7 @@ public abstract class AbstractScheduler {
                             TimeUnit.MILLISECONDS.toMinutes(timeEstimation) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(timeEstimation)),
                             TimeUnit.MILLISECONDS.toSeconds(timeEstimation) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(timeEstimation)));
 
-                    System.out.print("\r" + estimationMessage + animation);
+                    System.out.print("\r" + estimationMessage + animation + "    ");
                     animation += ".";
                     animationCounter++;
                     if (animationCounter > 4) {
@@ -119,7 +119,7 @@ public abstract class AbstractScheduler {
                 TimeUnit.MILLISECONDS.toHours(totalIterationTime),
                 TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
                 TimeUnit.MILLISECONDS.toSeconds(totalIterationTime) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalIterationTime)));
-        System.out.println("\r" + finishIterationMessage);
+        System.out.print("\r" + finishIterationMessage);
         if (!done) {
             System.out.println("\nApplication stopped by timeout. Some tasks stay inProgress. Exit.");
             exitCode = 1;
