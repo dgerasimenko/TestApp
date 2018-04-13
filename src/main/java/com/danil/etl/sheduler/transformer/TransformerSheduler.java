@@ -77,6 +77,8 @@ public class TransformerSheduler extends AbstractScheduler {
                     TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
                     taskServiceInfoHolder.getChunkSize());
             System.out.println("\r" + finishIterationMessage);
+            totalRecordsSize = flightDao.getApproximatedRowsCount();
+            System.out.println("Source table size: " + totalRecordsSize);
             tmpChunkSize = taskServiceInfoHolder.getChunkSize() * 2;
         }
         if (exitCode == 0) {
