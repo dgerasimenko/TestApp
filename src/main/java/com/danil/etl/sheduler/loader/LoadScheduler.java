@@ -16,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -31,9 +32,17 @@ public class LoadScheduler extends AbstractScheduler {
     @Override
     public int transform() {
         System.out.println("Loading. Started");
+        final long startTime = System.currentTimeMillis();
         int exitCode = execute(null, 1, new TaskServiceInfoHolder(chunkSize, 0l, 0l, 0));
         if (exitCode == 0) {
             taskInfoDao.deleteAll();
+            final long totalIterationTime = System.currentTimeMillis() - startTime;
+            final String finishIterationMessage = String.format("Total time for %s: %02d h %02d min. chunk.size: %d",
+                    getTaskType().getSimpleName(),
+                    TimeUnit.MILLISECONDS.toHours(totalIterationTime),
+                    TimeUnit.MILLISECONDS.toMinutes(totalIterationTime) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(totalIterationTime)),
+                    this.chunkSize);
+            System.out.println("\r" + finishIterationMessage);
             System.out.println("Loading. Done");
         } else {
             System.out.println("Loading. Failed");
